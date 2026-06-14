@@ -8,6 +8,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D0D0F">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fiend">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -32,8 +41,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .ob-wordmark{font-family:var(--display);font-size:42px;font-weight:800;letter-spacing:-0.02em;color:var(--text);line-height:1}
 .ob-wordmark span{color:var(--accent)}
 .ob-sub{font-size:14px;color:var(--text2);line-height:1.6;margin-top:10px;font-family:var(--body)}
+.ob-progress{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px}
+#ob-step1,#ob-step2{display:flex;flex-direction:column;flex:1;overflow:hidden}
 .ob-section-label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;padding:0 26px 10px;flex-shrink:0}
 .behavior-list{flex:1;overflow-y:auto;padding:0 26px 16px;display:flex;flex-direction:column;gap:7px}
+.ob-setup-list{flex:1;overflow-y:auto;padding:0 26px 16px;display:flex;flex-direction:column;gap:14px}
 .beh-opt{display:flex;align-items:center;gap:13px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:13px 15px;cursor:pointer;transition:border-color 0.15s,background 0.15s;user-select:none}
 .beh-opt.sel{border-color:var(--accent);background:var(--accent-dim)}
 .beh-emoji{font-size:22px;width:30px;text-align:center;flex-shrink:0}
@@ -75,10 +87,12 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
 .apt-wrap{margin:8px 14px 0;border-radius:14px;overflow:hidden;border:1px solid var(--border);height:144px;background:var(--bg2);flex-shrink:0;position:relative}
 .apt-wrap svg{width:100%;height:100%;display:block}
 
-.today-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 14px 0}
-.t-stat{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 8px 9px;text-align:center}
-.t-stat-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text)}
+.today-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 14px 0}
+.t-stat{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 4px 9px;text-align:center}
+.t-stat-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text)}
 .t-stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-top:3px;font-family:var(--mono)}
+.streak-callout{margin:8px 14px 0;font-family:var(--mono);font-size:11px;color:var(--accent);text-align:center;letter-spacing:0.1em;text-transform:uppercase;display:none}
+.streak-callout.show{display:block}
 
 .again-wrap{padding:9px 14px 0}
 @keyframes hb{0%,100%{box-shadow:0 0 0 0 rgba(201,242,32,0.4)}55%{box-shadow:0 0 0 14px rgba(201,242,32,0)}}
@@ -198,13 +212,20 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
 <!-- ONBOARDING -->
 <div id="onboard">
   <div class="ob-header">
+    <div class="ob-progress" id="ob-progress">Step 1 of 2</div>
     <div class="ob-wordmark">Fiend<span>.</span></div>
-    <div class="ob-sub">Pick your poison. Each behavior gets its own log, stats, and weekly report.</div>
+    <div class="ob-sub" id="ob-sub">Pick your poison. Each behavior gets its own log, stats, and weekly report.</div>
   </div>
-  <div class="ob-section-label">What do you want to track?</div>
-  <div class="behavior-list" id="beh-list"></div>
+  <div id="ob-step1">
+    <div class="ob-section-label">What do you want to track?</div>
+    <div class="behavior-list" id="beh-list"></div>
+  </div>
+  <div id="ob-step2" style="display:none">
+    <div class="ob-section-label">A couple numbers so the data means something</div>
+    <div class="ob-setup-list" id="setup-list"></div>
+  </div>
   <div class="ob-footer">
-    <button class="ob-btn" onclick="completeOnboard()">Start tracking →</button>
+    <button class="ob-btn" id="ob-btn" onclick="onboardNext()">Continue →</button>
   </div>
 </div>
 
@@ -226,7 +247,9 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
         <div class="t-stat"><div class="t-stat-val" id="h-count">0</div><div class="t-stat-lbl">Today</div></div>
         <div class="t-stat"><div class="t-stat-val" id="h-cost">—</div><div class="t-stat-lbl">Spent</div></div>
         <div class="t-stat"><div class="t-stat-val" id="h-time">0m</div><div class="t-stat-lbl" id="h-time-lbl">Time</div></div>
+        <div class="t-stat"><div class="t-stat-val" id="h-streak">—</div><div class="t-stat-lbl">Streak</div></div>
       </div>
+      <div class="streak-callout" id="streak-callout">Longest gap yet.</div>
       <div class="again-wrap">
         <button class="again-btn" id="again-btn" onclick="openSheet()">
           <span id="again-em">🚬</span><span id="again-lbl">AGAIN</span>
@@ -303,6 +326,36 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
         <div class="settings-section">
           <div class="settings-section-title">Active behaviors</div>
           <div class="settings-card" id="settings-beh-list"></div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Notifications</div>
+          <div class="settings-card">
+            <div class="settings-beh-item">
+              <div style="flex:1">
+                <div class="settings-row-label">Remind me to log</div>
+                <div class="settings-row-sub">Daily nudge if nothing's logged yet</div>
+              </div>
+              <button class="settings-toggle off" id="notif-toggle" onclick="toggleNotif()"></button>
+            </div>
+            <div class="settings-row" id="notif-time-row" style="display:none">
+              <div class="settings-row-label">Reminder time</div>
+              <input class="settings-input" type="time" id="notif-time" value="20:00" onchange="setNotifTime(this.value)" style="width:120px">
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Data</div>
+          <div class="settings-card">
+            <div class="settings-row" style="cursor:pointer" onclick="exportData()">
+              <div><div class="settings-row-label">Export data</div><div class="settings-row-sub">Download fiend-data.json</div></div>
+              <div style="font-family:var(--mono);font-size:13px;color:var(--text2)">↓</div>
+            </div>
+            <div class="settings-row" style="cursor:pointer" onclick="document.getElementById('import-file').click()">
+              <div><div class="settings-row-label">Import data</div><div class="settings-row-sub">Restore from a backup file</div></div>
+              <div style="font-family:var(--mono);font-size:13px;color:var(--text2)">↑</div>
+            </div>
+          </div>
+          <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(event)">
         </div>
         <button class="settings-save-btn" onclick="saveSettings()">Save changes</button>
         <button class="danger-btn" onclick="confirmReset()">Reset all data</button>
@@ -446,7 +499,7 @@ function drawShoppingApt(lvl){const box='<rect x="260" y="60" width="24" height=
 function drawAdultApt(lvl){setSVG('apt-svg',base+`<rect x="22" y="12" width="64" height="50" rx="2" fill="#14100e" stroke="#252528" stroke-width="1"/>`+(lvl>=3?'<rect x="22" y="12" width="64" height="50" rx="2" fill="#0a0808" opacity="0.7"/>':'')+`<rect x="14" y="88" width="200" height="8" rx="3" fill="#1c1818"/><rect x="14" y="96" width="200" height="20" rx="3" fill="#181414"/><rect x="14" y="116" width="200" height="10" rx="2" fill="#141010"/>`.replace('/>','>')+`</rect>`+table+(lvl>=2?plantW:plantH)+`<rect x="28" y="56" width="34" height="52" rx="4" fill="#1e1e22" stroke="#2a2a30" stroke-width="0.5"/><rect x="31" y="59" width="28" height="46" rx="2" fill="${lvl>=1?'#0a0a14':'#121220'}"/>`.replace('/>','>')+`</rect>`+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0808" opacity="0.7"/>':''));}
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let S={activeBehaviors:['smoking'],currentBehavior:'smoking',settings:{},events:{}};
+let S={activeBehaviors:['smoking'],currentBehavior:'smoking',settings:{},events:{},notif:{enabled:false,time:'20:00',lastSent:null}};
 function load(){try{const d=localStorage.getItem('fiend3');if(d)Object.assign(S,JSON.parse(d));}catch(e){}}
 function save(){try{localStorage.setItem('fiend3',JSON.stringify(S));}catch(e){}}
 function evts(bid){return S.events[bid]||[];}
@@ -454,7 +507,14 @@ function sett(bid){return S.settings[bid]||{};}
 
 // ─── ONBOARDING ───────────────────────────────────────────────────────────────
 let pending=new Set(['smoking']);
+let obStep=1;
 function buildOnboard(){
+  obStep=1;
+  document.getElementById('ob-step1').style.display='flex';
+  document.getElementById('ob-step2').style.display='none';
+  document.getElementById('ob-progress').textContent='Step 1 of 2';
+  document.getElementById('ob-sub').textContent='Pick your poison. Each behavior gets its own log, stats, and weekly report.';
+  document.getElementById('ob-btn').textContent='Continue →';
   document.getElementById('beh-list').innerHTML=Object.values(B).map(b=>`
     <div class="beh-opt ${pending.has(b.id)?'sel':''}" onclick="toggleB('${b.id}',this)">
       <div class="beh-emoji">${b.emoji}</div>
@@ -466,14 +526,45 @@ function toggleB(id,el){
   if(pending.has(id)){if(pending.size>1){pending.delete(id);el.classList.remove('sel');el.querySelector('.beh-check').textContent='';}}
   else{pending.add(id);el.classList.add('sel');el.querySelector('.beh-check').textContent='✓';}
 }
+function buildOnboardSetup(){
+  document.getElementById('setup-list').innerHTML=[...pending].map(bid=>{
+    const b=B[bid];
+    let fields=b.costFields.map(f=>`
+      <div class="settings-row"><div><div class="settings-row-label">${f.label}</div><div class="settings-row-sub">${f.unit||'number'}</div></div><input class="settings-input" id="ob-${bid}-${f.id}" type="number" value="${f.val}" inputmode="decimal"></div>`).join('');
+    fields+=`
+      <div class="settings-row"><div><div class="settings-row-label">${b.durField.label}</div><div class="settings-row-sub">${b.durField.unit}</div></div><input class="settings-input" id="ob-${bid}-${b.durField.id}" type="number" value="${b.durField.val}" inputmode="decimal"></div>`;
+    return `<div class="settings-section" style="margin-bottom:0">
+      <div class="settings-section-title">${b.emoji} ${b.name}</div>
+      <div class="settings-card">${fields}</div>
+    </div>`;
+  }).join('');
+}
+function onboardNext(){
+  if(obStep===1){
+    if(!pending.size)return;
+    obStep=2;
+    document.getElementById('ob-step1').style.display='none';
+    document.getElementById('ob-step2').style.display='flex';
+    document.getElementById('ob-progress').textContent='Step 2 of 2';
+    document.getElementById('ob-sub').textContent='These power your cost and time stats. Defaults are fine — you can change them later in Settings.';
+    document.getElementById('ob-btn').textContent='Start tracking →';
+    buildOnboardSetup();
+  }else{
+    completeOnboard();
+  }
+}
 function completeOnboard(){
   if(!pending.size)return;
   S.activeBehaviors=[...pending];
   S.currentBehavior=S.activeBehaviors[0];
   S.activeBehaviors.forEach(bid=>{
     const b=B[bid],cfg={};
-    b.costFields.forEach(f=>{cfg[f.id]=f.val;});
-    cfg[b.durField.id]=b.durField.val;
+    b.costFields.forEach(f=>{
+      const el=document.getElementById(`ob-${bid}-${f.id}`);
+      cfg[f.id]=el?(parseFloat(el.value)||f.val):f.val;
+    });
+    const del=document.getElementById(`ob-${bid}-${b.durField.id}`);
+    cfg[b.durField.id]=del?(parseFloat(del.value)||b.durField.val):b.durField.val;
     S.settings[bid]=cfg;
     S.events[bid]=S.events[bid]||[];
   });
@@ -549,12 +640,26 @@ function peakHr(bid){
   const peak=parseInt(Object.entries(h).sort((a,b)=>b[1]-a[1])[0][0]);
   return peak===0?'12 AM':peak<12?peak+' AM':peak===12?'12 PM':(peak-12)+' PM';
 }
-function longestGap(bid){
-  const life=evts(bid);if(life.length<2)return null;
+function bestGapMs(bid){
+  const life=evts(bid);if(life.length<2)return 0;
   const sorted=[...life].sort((a,b)=>a.timestamp-b.timestamp);
   let max=0;
   for(let i=1;i<sorted.length;i++)max=Math.max(max,sorted[i].timestamp-sorted[i-1].timestamp);
-  return fmtT(max/60000);
+  return max;
+}
+function longestGap(bid){
+  const max=bestGapMs(bid);return max?fmtT(max/60000):null;
+}
+function currentStreakMs(bid){
+  const life=evts(bid);if(!life.length)return null;
+  return Date.now()-Math.max(...life.map(e=>e.timestamp));
+}
+function fmtStreak(ms){
+  const mins=ms/60000;
+  if(mins<60)return Math.max(0,Math.floor(mins))+'m';
+  const hrs=mins/60;
+  if(hrs<24)return hrs.toFixed(1)+'h';
+  return (hrs/24).toFixed(1)+'d';
 }
 function score(bid){
   const life=evts(bid);if(!life.length)return 0;
@@ -612,6 +717,10 @@ function refresh(){
   document.getElementById('h-cost').textContent=pc>0?fmtC(td.length*pc):'—';
   document.getElementById('h-time').textContent=fmtT(td.length*dur);
   document.getElementById('h-time-lbl').textContent=b.timeLabel;
+  const streakMs=currentStreakMs(bid);
+  const best=bestGapMs(bid);
+  document.getElementById('h-streak').textContent=streakMs!=null?fmtStreak(streakMs):'—';
+  document.getElementById('streak-callout').classList.toggle('show',streakMs!=null&&best>0&&streakMs>best);
 
   // dash
   document.getElementById('d-tc').textContent=td.length;
@@ -710,6 +819,8 @@ function buildSettingsScreen(){
   html+=`</div></div>`;
   document.getElementById('settings-fields').innerHTML=html;
 
+  buildNotifSettings();
+
   const bl=document.getElementById('settings-beh-list');
   bl.innerHTML=Object.values(B).map(beh=>{
     const on=S.activeBehaviors.includes(beh.id);
@@ -747,9 +858,103 @@ function saveSettings(){
   btn.textContent='Saved ✓';
   setTimeout(()=>btn.textContent='Save changes',1500);
 }
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+let notifInterval=null;
+function buildNotifSettings(){
+  const n=S.notif||{enabled:false,time:'20:00'};
+  const toggle=document.getElementById('notif-toggle');
+  const timeRow=document.getElementById('notif-time-row');
+  const timeInput=document.getElementById('notif-time');
+  toggle.classList.toggle('on',n.enabled);
+  toggle.classList.toggle('off',!n.enabled);
+  timeRow.style.display=n.enabled?'flex':'none';
+  timeInput.value=n.time;
+}
+function toggleNotif(){
+  S.notif=S.notif||{enabled:false,time:'20:00'};
+  const n=S.notif;
+  if(!n.enabled){
+    if(!('Notification' in window)){alert('Notifications are not supported in this browser.');return;}
+    Notification.requestPermission().then(perm=>{
+      if(perm==='granted'){
+        n.enabled=true;save();buildNotifSettings();startNotifScheduler();
+      }else{
+        alert('Notification permission was not granted.');
+      }
+    });
+  }else{
+    n.enabled=false;save();buildNotifSettings();
+  }
+}
+function setNotifTime(val){
+  S.notif=S.notif||{enabled:false,time:'20:00'};
+  S.notif.time=val;
+  save();
+}
+function startNotifScheduler(){
+  if(notifInterval)return;
+  notifInterval=setInterval(checkNotif,60000);
+  checkNotif();
+}
+function checkNotif(){
+  const n=S.notif;
+  if(!n||!n.enabled||Notification.permission!=='granted')return;
+  const now=new Date();
+  const cur=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const todayStr=now.toDateString();
+  if(n.lastSent===todayStr||cur!==n.time)return;
+  const loggedToday=S.activeBehaviors.some(bid=>today(bid).length>0);
+  n.lastSent=todayStr;
+  save();
+  if(!loggedToday)fireReminder();
+}
+function fireReminder(){
+  const body="Haven't logged today. Is that progress or just forgetting?";
+  if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+    navigator.serviceWorker.ready.then(reg=>reg.showNotification('Fiend',{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png'}));
+  }else{
+    new Notification('Fiend',{body,icon:'icons/icon-192.png'});
+  }
+}
+
+// ─── EXPORT / IMPORT ──────────────────────────────────────────────────────────
+function exportData(){
+  const payload={app:'fiend',version:1,exportedAt:new Date().toISOString(),state:S};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.download='fiend-data.json';
+  link.href=url;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+function importData(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      const state=data&&data.state?data.state:data;
+      if(!state||!state.events||!state.settings||!state.activeBehaviors)throw new Error('Invalid backup file');
+      S=state;
+      save();
+      document.getElementById('onboard').style.display='none';
+      document.getElementById('app').style.display='flex';
+      buildSwitchers();
+      buildSettingsScreen();
+      refresh();
+      alert('Data imported successfully.');
+    }catch(e){
+      alert('That file doesn\'t look like a Fiend backup.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
 function confirmReset(){
   if(confirm('Delete ALL events and settings? This cannot be undone.')){
-    S={activeBehaviors:['smoking'],currentBehavior:'smoking',settings:{},events:{}};
+    S={activeBehaviors:['smoking'],currentBehavior:'smoking',settings:{},events:{},notif:{enabled:false,time:'20:00',lastSent:null}};
     localStorage.removeItem('fiend3');
     document.getElementById('app').style.display='none';
     document.getElementById('onboard').style.display='flex';
@@ -767,6 +972,12 @@ if(S.activeBehaviors&&S.activeBehaviors.length&&Object.keys(S.events).length){
   buildSwitchers();
   buildSettingsScreen();
   refresh();
+}
+if(S.notif&&S.notif.enabled&&'Notification' in window&&Notification.permission==='granted'){
+  startNotifScheduler();
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('service-worker.js').catch(()=>{});});
 }
 </script>
 </body>
