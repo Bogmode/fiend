@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Fiend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0D0D0F;--bg2:#131315;--bg3:#18181C;--bg4:#1F1F24;--bg5:#26262C;
+  --accent:#C9F220;--accent-dim:rgba(201,242,32,0.12);
+  --text:#EDE8DC;--text2:#8A8880;--text3:#46443F;
+  --border:#222226;--border2:#2C2C32;
+  --red:#E05252;
+  --display:'Syne',sans-serif;
+  --body:'Space Grotesk',sans-serif;
+  --mono:'Space Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
+#root{height:100dvh;max-width:430px;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:0;height:0}
+
+/* ── ONBOARDING ── */
+#onboard{position:absolute;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;overflow:hidden}
+.ob-header{padding:44px 26px 18px;flex-shrink:0}
+.ob-wordmark{font-family:var(--display);font-size:42px;font-weight:800;letter-spacing:-0.02em;color:var(--text);line-height:1}
+.ob-wordmark span{color:var(--accent)}
+.ob-sub{font-size:14px;color:var(--text2);line-height:1.6;margin-top:10px;font-family:var(--body)}
+.ob-section-label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;padding:0 26px 10px;flex-shrink:0}
+.behavior-list{flex:1;overflow-y:auto;padding:0 26px 16px;display:flex;flex-direction:column;gap:7px}
+.beh-opt{display:flex;align-items:center;gap:13px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:13px 15px;cursor:pointer;transition:border-color 0.15s,background 0.15s;user-select:none}
+.beh-opt.sel{border-color:var(--accent);background:var(--accent-dim)}
+.beh-emoji{font-size:22px;width:30px;text-align:center;flex-shrink:0}
+.beh-info{flex:1}
+.beh-name{font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:-0.01em}
+.beh-unit{font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--mono)}
+.beh-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.15s;color:transparent}
+.beh-opt.sel .beh-check{background:var(--accent);border-color:var(--accent);color:#0D0D0F}
+.ob-footer{padding:14px 26px calc(env(safe-area-inset-bottom,0px)+14px);flex-shrink:0;background:var(--bg);border-top:1px solid var(--border)}
+.ob-btn{width:100%;padding:17px;background:var(--accent);color:#0D0D0F;border:none;border-radius:13px;font-size:15px;font-weight:700;font-family:var(--display);cursor:pointer;letter-spacing:0.01em;transition:opacity 0.1s}
+.ob-btn:active{opacity:0.85}
+
+/* ── APP SHELL ── */
+#app{display:none;height:100%;flex-direction:column}
+.screens{flex:1;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none;padding-bottom:68px}
+.screen.active{display:block}
+
+/* ── NAV ── */
+nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--text3);transition:color 0.15s;font-family:var(--body)}
+.nav-btn.active{color:var(--accent)}
+.nav-icon{font-size:18px;line-height:1}
+.nav-lbl{font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;font-family:var(--mono)}
+
+/* ── BEHAVIOR SWITCHER ── */
+.bsw-wrap{padding:12px 14px 0;overflow-x:auto;scrollbar-width:none;display:flex;gap:6px;flex-shrink:0}
+.bsw-wrap::-webkit-scrollbar{display:none}
+.bsw-btn{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:6px 13px;white-space:nowrap;cursor:pointer;transition:all 0.15s;font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0;font-family:var(--body)}
+.bsw-btn .bsw-em{font-size:13px}
+.bsw-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+
+/* ── HOME ── */
+.home-score-row{display:flex;justify-content:flex-end;padding:8px 14px 0}
+.score-pill{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:5px 13px}
+.score-pill-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent)}
+.score-pill-tier{font-family:var(--mono);font-size:10px;color:var(--text3)}
+
+.apt-wrap{margin:8px 14px 0;border-radius:14px;overflow:hidden;border:1px solid var(--border);height:144px;background:var(--bg2);flex-shrink:0;position:relative}
+.apt-wrap svg{width:100%;height:100%;display:block}
+
+.today-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 14px 0}
+.t-stat{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 8px 9px;text-align:center}
+.t-stat-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text)}
+.t-stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-top:3px;font-family:var(--mono)}
+
+.again-wrap{padding:9px 14px 0}
+@keyframes hb{0%,100%{box-shadow:0 0 0 0 rgba(201,242,32,0.4)}55%{box-shadow:0 0 0 14px rgba(201,242,32,0)}}
+.again-btn{width:100%;height:74px;border-radius:16px;background:var(--accent);color:#0D0D0F;font-size:26px;font-weight:800;letter-spacing:0.02em;border:none;cursor:pointer;font-family:var(--display);animation:hb 2.8s ease-in-out infinite;transition:transform 0.1s,opacity 0.1s;display:flex;align-items:center;justify-content:center;gap:10px}
+.again-btn:active{transform:scale(0.96);opacity:0.9;animation:none}
+
+.obs{margin:8px 14px 0;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:13px 15px;font-size:13px;color:var(--text2);line-height:1.6;font-style:italic;min-height:46px;font-family:var(--body)}
+
+/* ── SHEET ── */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:400;display:none;align-items:flex-end;justify-content:center}
+.sheet-bg.open{display:flex}
+.sheet{background:var(--bg2);border-radius:22px 22px 0 0;border-top:1px solid var(--border2);padding:24px 16px calc(env(safe-area-inset-bottom,0px)+26px);width:100%;max-width:430px}
+.sheet-h{font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:3px;letter-spacing:-0.01em}
+.sheet-sub{font-size:13px;color:var(--text2);margin-bottom:18px;font-family:var(--body)}
+.trig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.trig-btn{background:var(--bg4);border:1px solid var(--border);border-radius:12px;padding:13px 8px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body);transition:all 0.12s}
+.trig-btn:active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+
+/* ── DASHBOARD ── */
+.dash{padding:14px}
+.sec-lbl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);margin-bottom:9px;margin-top:18px}
+.sec-lbl:first-child{margin-top:0}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:2px}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:13px;padding:13px}
+.stat-card-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.02em}
+.stat-card-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-top:5px;font-family:var(--mono)}
+.tbar-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.tbar-lbl{font-size:12px;color:var(--text2);width:80px;flex-shrink:0;font-family:var(--body)}
+.tbar-track{flex:1;height:4px;background:var(--bg5);border-radius:2px;overflow:hidden}
+.tbar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s ease}
+.tbar-pct{font-family:var(--mono);font-size:10px;color:var(--text3);width:28px;text-align:right;flex-shrink:0}
+.insight-list{display:flex;flex-direction:column;gap:7px}
+.insight{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:13px;color:var(--text2);line-height:1.5;display:flex;gap:10px;font-family:var(--body)}
+.ins-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px}
+.empty{font-size:12px;color:var(--text3);font-style:italic;padding:4px 0;font-family:var(--body)}
+
+/* ── LOG SCREEN ── */
+.log-wrap{padding:14px}
+.log-list{display:flex;flex-direction:column;gap:6px}
+.log-item{display:flex;align-items:center;gap:11px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px 13px;position:relative;overflow:hidden;transition:transform 0.15s}
+.log-item-left{flex:1;min-width:0}
+.log-time{font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:3px}
+.log-trigger{font-family:var(--body);font-size:14px;font-weight:600;color:var(--text)}
+.log-beh{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px}
+.log-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px 6px;flex-shrink:0;transition:color 0.15s;line-height:1}
+.log-del:active{color:var(--red)}
+.log-empty{font-size:13px;color:var(--text3);font-style:italic;text-align:center;padding:40px 20px;font-family:var(--body)}
+
+/* ── REPORT ── */
+.report{padding:14px}
+.r-eye{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--accent);margin-bottom:5px}
+.report-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:22px 18px;margin-bottom:11px}
+.report-title{font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-bottom:18px}
+.report-stats{display:flex;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.rstat{flex:1;padding:13px 6px;text-align:center;border-right:1px solid var(--border)}
+.rstat:last-child{border-right:none}
+.rstat-v{font-family:var(--mono);font-size:18px;font-weight:700}
+.rstat-l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;font-family:var(--mono)}
+.r-trig-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em}
+.r-trig-val{font-family:var(--display);font-size:30px;font-weight:800;color:var(--text);margin-top:4px;margin-bottom:18px;letter-spacing:-0.02em}
+.r-quote{font-size:14px;font-style:italic;color:var(--text2);line-height:1.65;border-left:2px solid var(--accent);padding-left:14px;font-family:var(--body)}
+.score-badge{display:flex;align-items:center;gap:18px;background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:11px}
+.score-num{font-family:var(--display);font-size:52px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-0.03em}
+.score-tier-name{font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:4px;letter-spacing:-0.01em}
+.score-tier-desc{font-size:12px;color:var(--text2);line-height:1.4;font-family:var(--body)}
+.share-btn{width:100%;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:13px;color:var(--text);font-size:14px;font-weight:600;font-family:var(--display);cursor:pointer;transition:background 0.15s;letter-spacing:0.01em}
+.share-btn:active{background:var(--bg5)}
+
+/* ── SHARE CARD (off-screen render) ── */
+#share-card{position:fixed;top:-9999px;left:-9999px;width:400px;background:#0D0D0F;padding:36px 32px;font-family:var(--body)}
+.sc-logo{font-family:var(--display);font-size:28px;font-weight:800;color:var(--accent);margin-bottom:24px;letter-spacing:-0.02em}
+.sc-week{font-family:var(--mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px}
+.sc-title{font-family:var(--display);font-size:22px;font-weight:800;color:var(--text);margin-bottom:20px;letter-spacing:-0.02em}
+.sc-stats{display:flex;gap:0;margin-bottom:22px;border:1px solid #222226;border-radius:10px;overflow:hidden}
+.sc-stat{flex:1;padding:12px 8px;text-align:center;border-right:1px solid #222226}
+.sc-stat:last-child{border-right:none}
+.sc-stat-v{font-family:var(--mono);font-size:18px;font-weight:700;color:#EDE8DC}
+.sc-stat-l{font-size:9px;color:#46443F;text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;font-family:var(--mono)}
+.sc-trig-lbl{font-family:var(--mono);font-size:10px;color:#46443F;text-transform:uppercase;letter-spacing:0.1em}
+.sc-trig-val{font-family:var(--display);font-size:28px;font-weight:800;color:#EDE8DC;margin:4px 0 16px;letter-spacing:-0.02em}
+.sc-quote{font-size:14px;font-style:italic;color:#8A8880;line-height:1.65;border-left:2px solid #C9F220;padding-left:14px;margin-bottom:22px}
+.sc-score-row{display:flex;align-items:center;gap:14px}
+.sc-score-num{font-family:var(--display);font-size:48px;font-weight:800;color:#C9F220;line-height:1}
+.sc-tier{font-family:var(--display);font-size:16px;font-weight:700;color:#EDE8DC}
+.sc-tier-desc{font-size:12px;color:#8A8880;margin-top:3px}
+
+/* ── SETTINGS ── */
+.settings{padding:14px}
+.settings-section{margin-bottom:20px}
+.settings-section-title{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);margin-bottom:10px}
+.settings-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.settings-row{display:flex;align-items:center;padding:13px 15px;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-label{flex:1;font-size:14px;font-weight:500;font-family:var(--body)}
+.settings-row-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.settings-input{background:var(--bg5);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-size:14px;font-family:var(--mono);font-weight:700;width:88px;text-align:right;outline:none;transition:border-color 0.15s}
+.settings-input:focus{border-color:var(--accent)}
+.settings-beh-item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--border)}
+.settings-beh-item:last-child{border-bottom:none}
+.settings-beh-em{font-size:20px;width:28px;text-align:center}
+.settings-beh-name{flex:1;font-size:14px;font-weight:600;font-family:var(--body)}
+.settings-toggle{width:40px;height:24px;border-radius:12px;border:none;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0}
+.settings-toggle.on{background:var(--accent)}
+.settings-toggle.off{background:var(--bg5)}
+.settings-toggle::after{content:'';position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left 0.2s}
+.settings-toggle.on::after{left:19px}
+.settings-toggle.off::after{left:3px}
+.settings-save-btn{width:100%;padding:16px;background:var(--accent);color:#0D0D0F;border:none;border-radius:13px;font-size:15px;font-weight:700;font-family:var(--display);cursor:pointer;margin-top:8px}
+.settings-save-btn:active{opacity:0.85}
+.danger-btn{width:100%;padding:14px;background:none;border:1px solid #3a2020;border-radius:13px;color:var(--red);font-size:13px;font-weight:600;font-family:var(--body);cursor:pointer;margin-top:8px}
+.danger-btn:active{background:#1a0a0a}
+</style>
+</head>
+<body>
+<div id="root">
+
+<!-- ONBOARDING -->
+<div id="onboard">
+  <div class="ob-header">
+    <div class="ob-wordmark">Fiend<span>.</span></div>
+    <div class="ob-sub">Pick your poison. Each behavior gets its own log, stats, and weekly report.</div>
+  </div>
+  <div class="ob-section-label">What do you want to track?</div>
+  <div class="behavior-list" id="beh-list"></div>
+  <div class="ob-footer">
+    <button class="ob-btn" onclick="completeOnboard()">Start tracking →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="screens">
+
+    <!-- HOME -->
+    <div class="screen active" id="screen-home">
+      <div class="bsw-wrap" id="bsw-home"></div>
+      <div class="home-score-row">
+        <div class="score-pill">
+          <span class="score-pill-val" id="h-score">—</span>
+          <span class="score-pill-tier" id="h-tier"></span>
+        </div>
+      </div>
+      <div class="apt-wrap"><svg id="apt-svg" viewBox="0 0 390 144" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div class="today-strip">
+        <div class="t-stat"><div class="t-stat-val" id="h-count">0</div><div class="t-stat-lbl">Today</div></div>
+        <div class="t-stat"><div class="t-stat-val" id="h-cost">—</div><div class="t-stat-lbl">Spent</div></div>
+        <div class="t-stat"><div class="t-stat-val" id="h-time">0m</div><div class="t-stat-lbl" id="h-time-lbl">Time</div></div>
+      </div>
+      <div class="again-wrap">
+        <button class="again-btn" id="again-btn" onclick="openSheet()">
+          <span id="again-em">🚬</span><span id="again-lbl">AGAIN</span>
+        </button>
+      </div>
+      <div class="obs" id="home-obs">Waiting for your first data point.</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="screen" id="screen-dash">
+      <div class="dash">
+        <div class="bsw-wrap" id="bsw-dash"></div>
+        <div class="sec-lbl" style="margin-top:14px">Today</div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-card-val" id="d-tc">0</div><div class="stat-card-lbl" id="d-tc-lbl">Events</div></div>
+          <div class="stat-card"><div class="stat-card-val" id="d-tco">—</div><div class="stat-card-lbl">Spent</div></div>
+          <div class="stat-card"><div class="stat-card-val" id="d-tt">0m</div><div class="stat-card-lbl" id="d-tt-lbl">Time</div></div>
+          <div class="stat-card"><div class="stat-card-val" id="d-tg">—</div><div class="stat-card-lbl">Avg gap</div></div>
+        </div>
+        <div class="sec-lbl">Lifetime</div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-card-val" id="d-lc">0</div><div class="stat-card-lbl" id="d-lc-lbl">Total</div></div>
+          <div class="stat-card"><div class="stat-card-val" id="d-lco">—</div><div class="stat-card-lbl">Total spent</div></div>
+          <div class="stat-card"><div class="stat-card-val" id="d-lt">0m</div><div class="stat-card-lbl" id="d-lt-lbl">Total time</div></div>
+          <div class="stat-card"><div class="stat-card-val" id="d-la">0</div><div class="stat-card-lbl">Avg / day</div></div>
+        </div>
+        <div class="sec-lbl">Triggers</div>
+        <div id="tbar"><div class="empty">No events yet.</div></div>
+        <div class="sec-lbl">Insights</div>
+        <div class="insight-list" id="insights"><div class="empty">Log a few events and insights will appear.</div></div>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="screen" id="screen-log">
+      <div class="log-wrap">
+        <div class="bsw-wrap" id="bsw-log" style="padding:0 0 12px"></div>
+        <div class="log-list" id="log-list"><div class="log-empty">No events logged yet.<br>Tap AGAIN on the home screen.</div></div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="screen" id="screen-report">
+      <div class="report">
+        <div class="bsw-wrap" id="bsw-report" style="padding:0 0 12px"></div>
+        <div class="r-eye">Weekly Fiend Report</div>
+        <div class="report-card">
+          <div class="report-title" id="r-title">This Week</div>
+          <div class="report-stats">
+            <div class="rstat"><div class="rstat-v" id="r-ev">—</div><div class="rstat-l" id="r-ev-lbl">Events</div></div>
+            <div class="rstat"><div class="rstat-v" id="r-cost">—</div><div class="rstat-l">Spent</div></div>
+            <div class="rstat"><div class="rstat-v" id="r-hrs">—</div><div class="rstat-l" id="r-hrs-lbl">Time</div></div>
+          </div>
+          <div class="r-trig-lbl">Most common trigger</div>
+          <div class="r-trig-val" id="r-trig">—</div>
+          <div class="r-quote" id="r-quote">Log some events and your weekly report will appear here.</div>
+        </div>
+        <div class="score-badge">
+          <div class="score-num" id="r-score">—</div>
+          <div>
+            <div class="score-tier-name" id="r-tier">Not yet rated</div>
+            <div class="score-tier-desc" id="r-desc">Start logging to calculate your Fiend Score.</div>
+          </div>
+        </div>
+        <button class="share-btn" onclick="generateShare()">↗ Share Report</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="screen-settings">
+      <div class="settings">
+        <div class="bsw-wrap" id="bsw-settings" style="padding:0 0 14px"></div>
+        <div id="settings-fields"></div>
+        <div class="settings-section">
+          <div class="settings-section-title">Active behaviors</div>
+          <div class="settings-card" id="settings-beh-list"></div>
+        </div>
+        <button class="settings-save-btn" onclick="saveSettings()">Save changes</button>
+        <button class="danger-btn" onclick="confirmReset()">Reset all data</button>
+      </div>
+    </div>
+
+  </div>
+
+  <nav>
+    <button class="nav-btn active" id="nav-home" onclick="tab('home')"><div class="nav-icon">⌂</div><div class="nav-lbl">Home</div></button>
+    <button class="nav-btn" id="nav-dash" onclick="tab('dash')"><div class="nav-icon">▦</div><div class="nav-lbl">Stats</div></button>
+    <button class="nav-btn" id="nav-log" onclick="tab('log')"><div class="nav-icon">☰</div><div class="nav-lbl">Log</div></button>
+    <button class="nav-btn" id="nav-report" onclick="tab('report')"><div class="nav-icon">◈</div><div class="nav-lbl">Report</div></button>
+    <button class="nav-btn" id="nav-settings" onclick="tab('settings')"><div class="nav-icon">⚙</div><div class="nav-lbl">Settings</div></button>
+  </nav>
+</div>
+
+<!-- TRIGGER SHEET -->
+<div class="sheet-bg" id="sheet-bg" onclick="bgClose(event)">
+  <div class="sheet">
+    <div class="sheet-h">What triggered this?</div>
+    <div class="sheet-sub">Pick the most honest answer.</div>
+    <div class="trig-grid" id="trig-grid"></div>
+  </div>
+</div>
+
+<!-- SHARE CARD (off-screen) -->
+<div id="share-card">
+  <div class="sc-logo">Fiend.</div>
+  <div class="sc-week">Weekly Report</div>
+  <div class="sc-title" id="sc-title">—</div>
+  <div class="sc-stats">
+    <div class="sc-stat"><div class="sc-stat-v" id="sc-ev">—</div><div class="sc-stat-l" id="sc-ev-l">Events</div></div>
+    <div class="sc-stat"><div class="sc-stat-v" id="sc-cost">—</div><div class="sc-stat-l">Spent</div></div>
+    <div class="sc-stat"><div class="sc-stat-v" id="sc-hrs">—</div><div class="sc-stat-l" id="sc-hrs-l">Time</div></div>
+  </div>
+  <div class="sc-trig-lbl">Most common trigger</div>
+  <div class="sc-trig-val" id="sc-trig">—</div>
+  <div class="sc-quote" id="sc-quote">—</div>
+  <div class="sc-score-row">
+    <div class="sc-score-num" id="sc-score">—</div>
+    <div><div class="sc-tier" id="sc-tier">—</div><div class="sc-tier-desc" id="sc-desc">—</div></div>
+  </div>
+</div>
+
+<script>
+// ─── BEHAVIOR DEFINITIONS ────────────────────────────────────────────────────
+const B = {
+  smoking:{id:'smoking',name:'Smoking',emoji:'🚬',verb:'AGAIN',unitLabel:'cigarettes',timeLabel:'Smoking',
+    hasCost:true,costFields:[{id:'packCost',label:'Cost per pack',unit:'$',val:14},{id:'cpp',label:'Cigarettes per pack',unit:'',val:20}],
+    durField:{id:'dur',label:'Avg break duration',unit:'min',val:7},
+    unitCost:s=>(s.packCost||14)/(s.cpp||20),
+    triggers:['Stress','Coffee','Work','Boredom','Alcohol','Driving','Social','Habit','Other'],
+    obs:['"Coffee remains your strongest business partner."','"Another data point acquired."','"Your lighter appreciates the overtime."','"Consistency, if nothing else."','"That balcony is basically a second residence."','"Noted. Filed. Judged very slightly."'],
+    roast:{Coffee:'"You and coffee continue to make questionable decisions together."',Stress:'"A very analog stress response."',Work:'"Your employer may not know they\'re a trigger."',Boredom:'"Your hands need a hobby."',Alcohol:'"A classic combination. Historically and personally."',Social:'"You\'ve made cigarettes a social currency."',Driving:'"The open road and an open pack."',Habit:'"The most honest answer."',Other:'"Even you aren\'t sure why. The data noted that."'},
+    draw:drawSmokingApt},
+  vaping:{id:'vaping',name:'Vaping',emoji:'💨',verb:'HIT',unitLabel:'hits',timeLabel:'Vaping',
+    hasCost:true,costFields:[{id:'podCost',label:'Cost per pod',unit:'$',val:15},{id:'hitsPerPod',label:'Hits per pod',unit:'',val:200}],
+    durField:{id:'dur',label:'Avg session (min)',unit:'min',val:3},
+    unitCost:s=>(s.podCost||15)/(s.hitsPerPod||200),
+    triggers:['Stress','Boredom','After eating','Work','Social','Anxiety','Habit','Other'],
+    obs:['"That\'s a lot of vapor for one human."','"Efficient. Relentlessly efficient."','"Another data point exhaled."','"The pod thanks you for the workout."','"Consistent. If nothing else."'],
+    roast:{Stress:'"A portable stress management system."',Boredom:'"The cloud fills the void."','After eating':'"Dessert. But nicotine."',Work:'"Productivity metrics: mixed."',Social:'"Nothing says connection like shared vapor."',Anxiety:'"Treating anxiety with anxiety. Bold."',Habit:'"Pure, uncut habit."',Other:'"Motive unknown. Outcome logged."'},
+    draw:drawVapingApt},
+  weed:{id:'weed',name:'Weed',emoji:'🌿',verb:'SESSION',unitLabel:'sessions',timeLabel:'High',
+    hasCost:true,costFields:[{id:'bagCost',label:'Cost per bag',unit:'$',val:50},{id:'sessionsPerBag',label:'Sessions per bag',unit:'',val:20}],
+    durField:{id:'dur',label:'Avg session (min)',unit:'min',val:45},
+    unitCost:s=>(s.bagCost||50)/(s.sessionsPerBag||20),
+    triggers:['Stress','Boredom','Social','Anxiety','Creative','Sleep','Habit','Other'],
+    obs:['"The couch has been well-researched."','"Consistent commitment to the process."','"Your snack budget is working overtime."','"The playlist choices are getting interesting."'],
+    roast:{Stress:'"Nothing like a smoke to forget what was stressful."',Boredom:'"Boredom is now a memory."',Social:'"Everyone\'s funnier this way."',Anxiety:'"The anxiety will return. But not yet."',Creative:'"The creative output is... somewhere."',Sleep:'"Efficient transition to unconsciousness."',Habit:'"Your body knows the schedule better than you do."',Other:'"The reason has been lost to the session."'},
+    draw:drawWeedApt},
+  doomscrolling:{id:'doomscrolling',name:'Doomscrolling',emoji:'📱',verb:'SCROLL',unitLabel:'sessions',timeLabel:'Scrolling',
+    hasCost:false,costFields:[],
+    durField:{id:'dur',label:'Avg session (min)',unit:'min',val:25},
+    unitCost:s=>0,
+    triggers:['Boredom','Anxiety','Procrastination','Insomnia','FOMO','Avoidance','Habit','Other'],
+    obs:['"The feed rewarded you with nothing again."','"Excellent thumb stamina."','"The algorithm has you mapped precisely."','"You know everything and feel worse."'],
+    roast:{Boredom:'"Boredom converted to mild dread."',Anxiety:'"The news helped with the anxiety. In no way."',Procrastination:'"The task remains. The feed does not."',Insomnia:'"Sleep replaced with content."',FOMO:'"You didn\'t miss anything. You checked anyway."',Avoidance:'"Whatever you\'re avoiding is still there."',Habit:'"Pure muscle memory at this point."',Other:'"No reason. Just the scroll."'},
+    draw:drawDoomApt},
+  alcohol:{id:'alcohol',name:'Alcohol',emoji:'🍺',verb:'DRINK',unitLabel:'drinks',timeLabel:'Drinking',
+    hasCost:true,costFields:[{id:'drinkCost',label:'Avg cost per drink',unit:'$',val:8}],
+    durField:{id:'dur',label:'Avg session (min)',unit:'min',val:60},
+    unitCost:s=>(s.drinkCost||8),
+    triggers:['Stress','Social','Boredom','Sadness','Celebration','Habit','Food','Other'],
+    obs:['"The bar tab is a form of autobiography."','"Another round for the data set."','"Hydration adjacent."','"Social lubrication achieved."'],
+    roast:{Stress:'"The stress deferred to tomorrow."',Social:'"You\'re funnier now. Statistically."',Boredom:'"Boredom chemically addressed."',Sadness:'"The feeling will be there in the morning. With a bonus."',Celebration:'"You celebrate frequently. Noted."',Habit:'"The body runs on schedule."',Food:'"Technically a food group."',Other:'"The reason doesn\'t matter to the liver."'},
+    draw:drawAlcoholApt},
+  energy:{id:'energy',name:'Energy Drinks',emoji:'⚡',verb:'CRACK ONE',unitLabel:'cans',timeLabel:'Caffeinated',
+    hasCost:true,costFields:[{id:'canCost',label:'Cost per can',unit:'$',val:3.5}],
+    durField:{id:'dur',label:'Caffeine window (hrs)',unit:'hr',val:4},
+    unitCost:s=>(s.canCost||3.5),
+    triggers:['Tired','Work','Gaming','Gym','Boredom','Habit','Crash','Other'],
+    obs:['"The cardiovascular system files a complaint."','"Another can. Another hour."','"Can count is climbing."','"Sleep is a myth you no longer believe."'],
+    roast:{Tired:'"Treating tiredness with the thing that causes tiredness."',Work:'"Productivity borrowed from future you."',Gaming:'"The match required full chemical support."',Gym:'"Pre-workout has escalated."',Boredom:'"Boredom solved with artificial urgency."',Habit:'"Your hand knows the way to the fridge."',Crash:'"Treating the crash from the last can. Bold."',Other:'"No reason needed. The can was there."'},
+    draw:drawEnergyApt},
+  gambling:{id:'gambling',name:'Gambling',emoji:'🎰',verb:'BET',unitLabel:'sessions',timeLabel:'Gambling',
+    hasCost:true,costFields:[{id:'avgBet',label:'Avg wager per session',unit:'$',val:20}],
+    durField:{id:'dur',label:'Avg session (min)',unit:'min',val:30},
+    unitCost:s=>(s.avgBet||20),
+    triggers:['Boredom','Thrill','Stress','Winning streak','Losing streak','Social','Habit','Other'],
+    obs:['"The house remains undefeated."','"Another session for the actuaries."','"The odds were, technically, stated upfront."','"The thrill was worth something. Probably."'],
+    roast:{Boredom:'"Boredom resolved. Bank account less so."',Thrill:'"The thrill was real. The return, less so."',Stress:'"Financial stress treated with financial risk."','Winning streak':'"The streak ended when it ended."','Losing streak':'"Chasing. A classic strategy."',Social:'"Everyone lost together."',Habit:'"Routine is the most expensive habit."',Other:'"The reason is \'just one more\'."'},
+    draw:drawGamblingApt},
+  shopping:{id:'shopping',name:'Impulse Shopping',emoji:'🛍️',verb:'BUY IT',unitLabel:'purchases',timeLabel:'Browsing',
+    hasCost:true,costFields:[{id:'avgSpend',label:'Avg purchase amount',unit:'$',val:35}],
+    durField:{id:'dur',label:'Avg browsing (min)',unit:'min',val:20},
+    unitCost:s=>(s.avgSpend||35),
+    triggers:['Boredom','Stress','Sale','FOMO','Sad','Reward','Procrastination','Other'],
+    obs:['"The package arrives in 3-5 business days."','"Cart cleared. Dopamine achieved."','"Your recommendations are a portrait now."','"Free shipping was technically earned."'],
+    roast:{Boredom:'"Boredom monetized."',Stress:'"The invoice arrives with the relief."',Sale:'"You saved money by spending money."',FOMO:'"Everyone else has it. Now you do too."',Sad:'"The sadness persists. The item arrives Thursday."',Reward:'"You rewarded yourself. Noted without judgment."',Procrastination:'"The task waits. The package does not."',Other:'"The algorithm knew before you did."'},
+    draw:drawShoppingApt},
+  adult:{id:'adult',name:'Adult Content',emoji:'🔞',verb:'AGAIN',unitLabel:'sessions',timeLabel:'Watching',
+    hasCost:false,costFields:[],
+    durField:{id:'dur',label:'Avg session (min)',unit:'min',val:20},
+    unitCost:s=>0,
+    triggers:['Boredom','Stress','Loneliness','Procrastination','Habit','Insomnia','Other'],
+    obs:['"Another session. The data is indifferent."','"Logged. No judgment. Just numbers."','"The pattern is clear. The pattern is yours."','"Another data point for the behavioral record."'],
+    roast:{Boredom:'"Boredom: solved. Briefly."',Stress:'"Stress relief with a three-minute shelf life."',Loneliness:'"The screen is not a substitute. The data agrees."',Procrastination:'"The task survives. You did too."',Habit:'"The body runs on its own schedule now."',Insomnia:'"Sleep replaced with content. This never ends well."',Other:'"No stated reason. The habit doesn\'t need one."'},
+    draw:drawAdultApt}
+};
+
+// ─── SVG HELPERS ──────────────────────────────────────────────────────────────
+const plantH=`<rect x="305" y="104" width="20" height="12" rx="2" fill="#3a2e1e"/><line x1="315" y1="104" x2="315" y2="82" stroke="#2d6b1a" stroke-width="2.5"/><ellipse cx="315" cy="80" rx="14" ry="9" fill="#2e7d1c"/><ellipse cx="304" cy="86" rx="9" ry="6" fill="#276a17"/><ellipse cx="326" cy="86" rx="9" ry="6" fill="#276a17"/>`;
+const plantW=`<rect x="305" y="104" width="20" height="12" rx="2" fill="#3a2e1e"/><line x1="315" y1="104" x2="315" y2="90" stroke="#4a5c1a" stroke-width="2"/><ellipse cx="315" cy="88" rx="10" ry="7" fill="#3d5614" opacity="0.8"/><ellipse cx="307" cy="94" rx="7" ry="4" fill="#324810" opacity="0.6"/>`;
+const base=`<rect width="390" height="110" fill="#141416"/><rect y="110" width="390" height="34" fill="#111113"/><line x1="0" y1="110" x2="390" y2="110" stroke="#1e1e22" stroke-width="1"/>`;
+const desk=`<rect x="14" y="90" width="140" height="7" rx="2" fill="#211d18"/><rect x="22" y="97" width="7" height="18" rx="1" fill="#1c1814"/><rect x="138" y="97" width="7" height="18" rx="1" fill="#1c1814"/>`;
+const chair=`<rect x="172" y="66" width="52" height="40" rx="6" fill="#1c1818"/><rect x="166" y="103" width="64" height="7" rx="3" fill="#181414"/><rect x="172" y="110" width="8" height="16" rx="2" fill="#181414"/><rect x="212" y="110" width="8" height="16" rx="2" fill="#181414"/>`;
+const table=`<rect x="258" y="80" width="94" height="6" rx="2" fill="#211d18"/><rect x="266" y="86" width="6" height="30" rx="1" fill="#1c1814"/><rect x="340" y="86" width="6" height="30" rx="1" fill="#1c1814"/>`;
+const win=`<rect x="22" y="12" width="64" height="50" rx="2" fill="#0e1a12" stroke="#252528" stroke-width="1"/><line x1="54" y1="12" x2="54" y2="62" stroke="#252528" stroke-width="0.5"/><line x1="22" y1="37" x2="86" y2="37" stroke="#252528" stroke-width="0.5"/>`;
+const monitor=`<rect x="34" y="62" width="62" height="30" rx="3" fill="#0A0A0C" stroke="#2a2a30" stroke-width="0.5"/><rect x="58" y="92" width="12" height="6" rx="1" fill="#181818"/>`;
+function setSVG(id,html){ const el=document.getElementById(id); if(el) el.innerHTML=html; }
+function drawSmokingApt(lvl){setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="188" y="72" width="30" height="5" rx="1" fill="#2a2020" transform="rotate(-12 203 74)"/><rect x="202" y="80" width="20" height="3" rx="1" fill="#252020" transform="rotate(6 212 81)"/>':'')+(lvl>=3?'<rect x="268" y="72" width="20" height="8" rx="2" fill="#221e1a"/><ellipse cx="278" cy="72" rx="5" ry="2" fill="#66605a" opacity="0.5"/>':'')+(lvl>=4?'<rect x="134" y="76" width="14" height="3" rx="1" fill="#252020" transform="rotate(18 141 77)"/><rect x="150" y="72" width="10" height="2" rx="1" fill="#252020" transform="rotate(-8 155 73)"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0e0c0a" opacity="0.5"/>':''));}
+function drawVapingApt(lvl){setSVG('apt-svg',base+`<rect x="20" y="12" width="70" height="50" rx="3" fill="#0a1020" stroke="#252528" stroke-width="1"/>`.replace('0a1020','0a1020')+desk+`<rect x="34" y="72" width="14" height="26" rx="4" fill="#1e2030" stroke="#303248" stroke-width="0.5"/>`.replace('>','/>')+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<ellipse cx="95" cy="28" rx="22" ry="10" fill="#1a1e2a" opacity="0.25"/>':'')+(lvl>=3?'<rect x="268" y="70" width="28" height="10" rx="3" fill="#1e2030" stroke="#303248" stroke-width="0.5"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0c14" opacity="0.5"/>':''));}
+function drawWeedApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="30" y="60" width="22" height="7" rx="2" fill="#221e18"/>`.replace('/>','>')+`</rect>`+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="190" y="74" width="34" height="4" rx="1" fill="#1e221c" transform="rotate(-8 207 76)"/>':'')+(lvl>=3?'<rect x="268" y="72" width="22" height="8" rx="2" fill="#221e18"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0e0a" opacity="0.5"/>':''));}
+function drawDoomApt(lvl){setSVG('apt-svg',base+`<rect x="20" y="18" width="80" height="56" rx="3" fill="#0a0e1a" stroke="#252528" stroke-width="1"/><rect x="22" y="20" width="76" height="52" rx="2" fill="#0e1224" opacity="0.9"/>`.replace('0.9','0.9')+(lvl>=2?'<rect x="22" y="20" width="76" height="52" rx="2" fill="#141830" opacity="0.5"/>':'')+(lvl>=1?'<rect x="155" y="28" width="36" height="58" rx="4" fill="#1e1e22" stroke="#2a2a30" stroke-width="0.5"/><rect x="159" y="32" width="28" height="50" rx="2" fill="#0a0a14"/>':'')+`<rect x="148" y="66" width="122" height="50" rx="6" fill="#1c1818"/><rect x="142" y="113" width="134" height="7" rx="3" fill="#181414"/><rect x="148" y="120" width="10" height="16" rx="2" fill="#181414"/><rect x="256" y="120" width="10" height="16" rx="2" fill="#181414"/>`.replace('0.5','0.5')+table+(lvl>=2?plantW:plantH)+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#080a10" opacity="0.6"/>':''));}
+function drawAlcoholApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="28" y="58" width="10" height="32" rx="3" fill="#2a3020" stroke="#3a4030" stroke-width="0.5"/><rect x="30" y="56" width="6" height="4" rx="2" fill="#3a4030"/><rect x="44" y="66" width="9" height="26" rx="3" fill="#2a2c20" stroke="#3a3c30" stroke-width="0.5"/>`.replace('0.5','0.5')+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="60" y="68" width="8" height="24" rx="3" fill="#2a2820" stroke="#3a3830" stroke-width="0.5"/>':'')+(lvl>=3?'<rect x="268" y="72" width="38" height="10" rx="2" fill="#201a14"/><rect x="270" y="74" width="8" height="26" rx="3" fill="#2a2c20" stroke="#3a3c30" stroke-width="0.5"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#100a08" opacity="0.5"/>':''));}
+function drawEnergyApt(lvl){const can='<rect x="266" y="58" width="14" height="30" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="268" y="54" width="10" height="6" rx="2" fill="#283820"/>';setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+can+(lvl>=1?'<rect x="284" y="60" width="13" height="28" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="286" y="56" width="9" height="6" rx="2" fill="#283820"/>':'')+(lvl>=3?'<rect x="86" y="94" width="13" height="26" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="88" y="90" width="9" height="6" rx="2" fill="#283820"/>':'')+(lvl>=4?'<rect x="302" y="62" width="12" height="26" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="304" y="58" width="8" height="6" rx="2" fill="#283820"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#080e06" opacity="0.6"/>':''));}
+function drawGamblingApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="34" y="60" width="62" height="32" rx="3" fill="#0A0A0C" stroke="#2a2a30" stroke-width="0.5"/><rect x="58" y="92" width="12" height="5" rx="1" fill="#181818"/>`.replace('/>','>')+`</rect>`+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="268" y="66" width="22" height="16" rx="2" fill="#1e1c14" stroke="#2e2c24" stroke-width="0.5"/><rect x="272" y="70" width="4" height="4" rx="1" fill="#aa8820" opacity="0.7"/><rect x="280" y="70" width="4" height="4" rx="1" fill="#aa2020" opacity="0.7"/>':'')+(lvl>=3?'<rect x="294" y="68" width="20" height="14" rx="2" fill="#1e1c14" stroke="#2e2c24" stroke-width="0.5"/><rect x="298" y="71" width="4" height="4" rx="1" fill="#2088aa" opacity="0.7"/><rect x="306" y="71" width="4" height="4" rx="1" fill="#20aa20" opacity="0.7"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#100a06" opacity="0.6"/>':''));}
+function drawShoppingApt(lvl){const box='<rect x="260" y="60" width="24" height="28" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/>';setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?box:'')+(lvl>=2?'<rect x="28" y="80" width="26" height="28" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="32" y="76" width="18" height="6" rx="1" fill="#2a2c38"/>':'')+(lvl>=3?'<rect x="60" y="78" width="24" height="26" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="64" y="74" width="16" height="6" rx="1" fill="#2a2c38"/><rect x="287" y="62" width="22" height="26" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/>':'')+(lvl>=4?'<rect x="91" y="76" width="22" height="24" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="95" y="72" width="14" height="6" rx="1" fill="#2a2c38"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#06080e" opacity="0.6"/>':''));}
+function drawAdultApt(lvl){setSVG('apt-svg',base+`<rect x="22" y="12" width="64" height="50" rx="2" fill="#14100e" stroke="#252528" stroke-width="1"/>`+(lvl>=3?'<rect x="22" y="12" width="64" height="50" rx="2" fill="#0a0808" opacity="0.7"/>':'')+`<rect x="14" y="88" width="200" height="8" rx="3" fill="#1c1818"/><rect x="14" y="96" width="200" height="20" rx="3" fill="#181414"/><rect x="14" y="116" width="200" height="10" rx="2" fill="#141010"/>`.replace('/>','>')+`</rect>`+table+(lvl>=2?plantW:plantH)+`<rect x="28" y="56" width="34" height="52" rx="4" fill="#1e1e22" stroke="#2a2a30" stroke-width="0.5"/><rect x="31" y="59" width="28" height="46" rx="2" fill="${lvl>=1?'#0a0a14':'#121220'}"/>`.replace('/>','>')+`</rect>`+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0808" opacity="0.7"/>':''));}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let S={activeBehaviors:['smoking'],currentBehavior:'smoking',settings:{},events:{}};
+function load(){try{const d=localStorage.getItem('fiend3');if(d)Object.assign(S,JSON.parse(d));}catch(e){}}
+function save(){try{localStorage.setItem('fiend3',JSON.stringify(S));}catch(e){}}
+function evts(bid){return S.events[bid]||[];}
+function sett(bid){return S.settings[bid]||{};}
+
+// ─── ONBOARDING ───────────────────────────────────────────────────────────────
+let pending=new Set(['smoking']);
+function buildOnboard(){
+  document.getElementById('beh-list').innerHTML=Object.values(B).map(b=>`
+    <div class="beh-opt ${pending.has(b.id)?'sel':''}" onclick="toggleB('${b.id}',this)">
+      <div class="beh-emoji">${b.emoji}</div>
+      <div class="beh-info"><div class="beh-name">${b.name}</div><div class="beh-unit">${b.unitLabel}</div></div>
+      <div class="beh-check">${pending.has(b.id)?'✓':''}</div>
+    </div>`).join('');
+}
+function toggleB(id,el){
+  if(pending.has(id)){if(pending.size>1){pending.delete(id);el.classList.remove('sel');el.querySelector('.beh-check').textContent='';}}
+  else{pending.add(id);el.classList.add('sel');el.querySelector('.beh-check').textContent='✓';}
+}
+function completeOnboard(){
+  if(!pending.size)return;
+  S.activeBehaviors=[...pending];
+  S.currentBehavior=S.activeBehaviors[0];
+  S.activeBehaviors.forEach(bid=>{
+    const b=B[bid],cfg={};
+    b.costFields.forEach(f=>{cfg[f.id]=f.val;});
+    cfg[b.durField.id]=b.durField.val;
+    S.settings[bid]=cfg;
+    S.events[bid]=S.events[bid]||[];
+  });
+  save();
+  document.getElementById('onboard').style.display='none';
+  document.getElementById('app').style.display='flex';
+  buildSwitchers();
+  buildSettingsScreen();
+  refresh();
+}
+
+// ─── SWITCHERS ────────────────────────────────────────────────────────────────
+function buildSwitchers(){
+  ['bsw-home','bsw-dash','bsw-log','bsw-report','bsw-settings'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el||S.activeBehaviors.length<=1){if(el)el.innerHTML='';return;}
+    el.innerHTML=S.activeBehaviors.map(bid=>{
+      const b=B[bid];
+      return `<button class="bsw-btn ${bid===S.currentBehavior?'active':''}" onclick="switchB('${bid}')">\
+        <span class="bsw-em">${b.emoji}</span>${b.name}</button>`;
+    }).join('');
+  });
+}
+function switchB(bid){S.currentBehavior=bid;buildSwitchers();refresh();}
+
+// ─── SHEET ────────────────────────────────────────────────────────────────────
+function openSheet(){
+  const b=B[S.currentBehavior];
+  document.getElementById('trig-grid').innerHTML=b.triggers.map(t=>`<button class="trig-btn" onclick="logEvent('${t}')">${t}</button>`).join('');
+  document.getElementById('sheet-bg').classList.add('open');
+}
+function bgClose(e){if(e.target===document.getElementById('sheet-bg'))document.getElementById('sheet-bg').classList.remove('open');}
+function logEvent(trigger){
+  document.getElementById('sheet-bg').classList.remove('open');
+  const bid=S.currentBehavior;
+  if(!S.events[bid])S.events[bid]=[];
+  S.events[bid].push({id:Date.now(),timestamp:Date.now(),trigger});
+  save();
+  const b=B[bid];
+  document.getElementById('home-obs').textContent=b.obs[Math.floor(Math.random()*b.obs.length)];
+  refresh();
+}
+
+// ─── DELETE EVENT ─────────────────────────────────────────────────────────────
+function deleteEvent(bid,id){
+  S.events[bid]=(S.events[bid]||[]).filter(e=>e.id!==id);
+  save();refresh();
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function tab(t){
+  ['home','dash','log','report','settings'].forEach(s=>{
+    document.getElementById('screen-'+s).classList.toggle('active',s===t);
+    document.getElementById('nav-'+s).classList.toggle('active',s===t);
+  });
+  refresh();
+}
+
+// ─── ANALYTICS ────────────────────────────────────────────────────────────────
+function fmtT(mins){mins=Math.round(mins);return mins<60?mins+'m':(mins/60).toFixed(1)+'h';}
+function fmtC(n){return '$'+n.toFixed(2);}
+function today(bid){const m=new Date();m.setHours(0,0,0,0);return evts(bid).filter(e=>e.timestamp>=m.getTime());}
+function week(bid){return evts(bid).filter(e=>e.timestamp>=Date.now()-7*864e5);}
+function trigBD(bid){
+  const t={};evts(bid).forEach(e=>{t[e.trigger]=(t[e.trigger]||0)+1;});
+  const total=evts(bid).length||1;
+  return Object.entries(t).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({label:k,count:v,pct:Math.round(v/total*100)}));
+}
+function topT(bid){const tb=trigBD(bid);return tb.length?tb[0].label:'—';}
+function peakHr(bid){
+  const life=evts(bid);if(!life.length)return null;
+  const h={};life.forEach(e=>{const hr=new Date(e.timestamp).getHours();h[hr]=(h[hr]||0)+1;});
+  const peak=parseInt(Object.entries(h).sort((a,b)=>b[1]-a[1])[0][0]);
+  return peak===0?'12 AM':peak<12?peak+' AM':peak===12?'12 PM':(peak-12)+' PM';
+}
+function longestGap(bid){
+  const life=evts(bid);if(life.length<2)return null;
+  const sorted=[...life].sort((a,b)=>a.timestamp-b.timestamp);
+  let max=0;
+  for(let i=1;i<sorted.length;i++)max=Math.max(max,sorted[i].timestamp-sorted[i-1].timestamp);
+  return fmtT(max/60000);
+}
+function score(bid){
+  const life=evts(bid);if(!life.length)return 0;
+  const td=today(bid);
+  const freq=Math.min(td.length/15,1);
+  const tb=trigBD(bid);
+  const conc=tb.length?tb[0].count/life.length:0;
+  const vol=Math.min(life.length/120,1);
+  return Math.min(Math.round((freq*0.45+conc*0.3+vol*0.25)*100),100);
+}
+function tier(s){
+  if(s<=20)return['Casual','A gentle flirtation with the habit.'];
+  if(s<=40)return['Habitual','It has become part of the routine.'];
+  if(s<=60)return['Dedicated','Showing up. Every single day.'];
+  if(s<=80)return['Committed','The data does not lie.'];
+  return['Fiend','You have arrived. Fully.'];
+}
+function aptLvl(bid){const n=evts(bid).length;return n<5?0:n<15?1:n<30?2:n<60?3:n<100?4:5;}
+function fmtTs(ts){
+  const d=new Date(ts);
+  const now=new Date();
+  const diff=Math.floor((now-d)/60000);
+  if(diff<1)return'just now';
+  if(diff<60)return diff+'m ago';
+  if(diff<1440)return Math.floor(diff/60)+'h ago';
+  if(diff<10080)return Math.floor(diff/1440)+'d ago';
+  return d.toLocaleDateString();
+}
+
+// ─── REFRESH ──────────────────────────────────────────────────────────────────
+function refresh(){
+  const bid=S.currentBehavior;
+  const b=B[bid];
+  const s=sett(bid);
+  const life=evts(bid);
+  const td=today(bid);
+  const wk=week(bid);
+  const pc=b.unitCost(s);
+  const dur=parseFloat(s[b.durField.id])||b.durField.val;
+  const sc=score(bid);
+  const [tr,ds]=tier(sc);
+  const tb=trigBD(bid);
+  const top=topT(bid);
+  const lvl=aptLvl(bid);
+
+  // apartment
+  b.draw(lvl);
+
+  // home
+  document.getElementById('again-em').textContent=b.emoji;
+  document.getElementById('again-lbl').textContent=b.verb;
+  document.getElementById('h-score').textContent=sc;
+  document.getElementById('h-tier').textContent=tr;
+  document.getElementById('h-count').textContent=td.length;
+  document.getElementById('h-cost').textContent=pc>0?fmtC(td.length*pc):'—';
+  document.getElementById('h-time').textContent=fmtT(td.length*dur);
+  document.getElementById('h-time-lbl').textContent=b.timeLabel;
+
+  // dash
+  document.getElementById('d-tc').textContent=td.length;
+  document.getElementById('d-tc-lbl').textContent=b.unitLabel;
+  document.getElementById('d-tco').textContent=pc>0?fmtC(td.length*pc):'—';
+  document.getElementById('d-tt').textContent=fmtT(td.length*dur);
+  document.getElementById('d-tt-lbl').textContent=b.timeLabel;
+  if(td.length>1){
+    const sorted=[...td].sort((a,b)=>a.timestamp-b.timestamp);
+    const gaps=[];for(let i=1;i<sorted.length;i++)gaps.push((sorted[i].timestamp-sorted[i-1].timestamp)/60000);
+    document.getElementById('d-tg').textContent=fmtT(gaps.reduce((a,b)=>a+b,0)/gaps.length);
+  }else document.getElementById('d-tg').textContent='—';
+  const apd=life.length<2?life.length:(()=>{const f=Math.min(...life.map(e=>e.timestamp));const dy=Math.max((Date.now()-f)/864e5,1);return(life.length/dy).toFixed(1);})();
+  document.getElementById('d-lc').textContent=life.length;
+  document.getElementById('d-lc-lbl').textContent=b.unitLabel;
+  document.getElementById('d-lco').textContent=pc>0?fmtC(life.length*pc):'—';
+  document.getElementById('d-lt').textContent=fmtT(life.length*dur);
+  document.getElementById('d-lt-lbl').textContent=b.timeLabel;
+  document.getElementById('d-la').textContent=apd;
+  document.getElementById('tbar').innerHTML=tb.length?tb.slice(0,6).map(t=>`<div class="tbar-row"><div class="tbar-lbl">${t.label}</div><div class="tbar-track"><div class="tbar-fill" style="width:${t.pct}%"></div></div><div class="tbar-pct">${t.pct}%</div></div>`).join(''):'<div class="empty">No events yet.</div>';
+  const ins=[];
+  if(life.length>=3){
+    if(tb[0])ins.push(`${tb[0].pct}% of events follow ${tb[0].label.toLowerCase()}.`);
+    const ph=peakHr(bid);if(ph)ins.push(`Peak activity around ${ph}.`);
+    const lg=longestGap(bid);if(lg)ins.push(`Longest clean gap: ${lg}.`);
+    if(life.length>=8){const days={};life.forEach(e=>{const d=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(e.timestamp).getDay()];days[d]=(days[d]||0)+1;});const td2=Object.entries(days).sort((a,b)=>b[1]-a[1])[0][0];ins.push(`${td2} is your highest-volume day.`);}
+    if(tb.length>=2&&tb[0].count>tb[1].count*1.5)ins.push(`${tb[0].label} generates more events than ${tb[1].label} combined.`);
+  }
+  document.getElementById('insights').innerHTML=ins.length?ins.map(i=>`<div class="insight"><div class="ins-dot"></div><span>${i}</span></div>`).join(''):'<div class="empty">Log a few events and insights will appear.</div>';
+
+  // log
+  const allEvts=[...life].sort((a,b)=>b.timestamp-a.timestamp);
+  document.getElementById('log-list').innerHTML=allEvts.length?allEvts.map(e=>`
+    <div class="log-item">
+      <div class="log-item-left">
+        <div class="log-time">${fmtTs(e.timestamp)}</div>
+        <div class="log-trigger">${e.trigger}</div>
+        <div class="log-beh">${b.emoji} ${b.name}</div>
+      </div>
+      <button class="log-del" onclick="deleteEvent('${bid}',${e.id})" title="Delete">×</button>
+    </div>`).join(''):'<div class="log-empty">No events logged yet.<br>Tap AGAIN on the home screen.</div>';
+
+  // report
+  document.getElementById('r-title').textContent=`${b.emoji} ${b.name} — This Week`;
+  document.getElementById('r-ev').textContent=wk.length;
+  document.getElementById('r-ev-lbl').textContent=b.unitLabel;
+  document.getElementById('r-cost').textContent=pc>0?fmtC(wk.length*pc):'—';
+  document.getElementById('r-hrs').textContent=fmtT(wk.length*dur);
+  document.getElementById('r-hrs-lbl').textContent=b.timeLabel;
+  document.getElementById('r-trig').textContent=top;
+  document.getElementById('r-score').textContent=sc;
+  document.getElementById('r-tier').textContent=tr;
+  document.getElementById('r-desc').textContent=ds;
+  if(wk.length>0){const k=top in b.roast?top:'Other';document.getElementById('r-quote').textContent=b.roast[k];}
+
+  // share card data sync
+  document.getElementById('sc-title').textContent=`${b.emoji} ${b.name} — This Week`;
+  document.getElementById('sc-ev').textContent=wk.length;
+  document.getElementById('sc-ev-l').textContent=b.unitLabel;
+  document.getElementById('sc-cost').textContent=pc>0?fmtC(wk.length*pc):'—';
+  document.getElementById('sc-hrs').textContent=fmtT(wk.length*dur);
+  document.getElementById('sc-hrs-l').textContent=b.timeLabel;
+  document.getElementById('sc-trig').textContent=top;
+  document.getElementById('sc-score').textContent=sc;
+  document.getElementById('sc-tier').textContent=tr;
+  document.getElementById('sc-desc').textContent=ds;
+  if(wk.length>0){const k=top in b.roast?top:'Other';document.getElementById('sc-quote').textContent=b.roast[k];}
+}
+
+// ─── SHARE ────────────────────────────────────────────────────────────────────
+function generateShare(){
+  const card=document.getElementById('share-card');
+  card.style.top='0px';card.style.left='0px';card.style.position='fixed';card.style.zIndex='999';
+  html2canvas(card,{backgroundColor:'#0D0D0F',scale:2,useCORS:true,logging:false}).then(canvas=>{
+    card.style.top='-9999px';card.style.left='-9999px';
+    const link=document.createElement('a');
+    link.download='fiend-report.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }).catch(()=>{
+    card.style.top='-9999px';card.style.left='-9999px';
+    alert('Share card generated! (In the real app, this downloads as a PNG.)');
+  });
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────────────────
+function buildSettingsScreen(){
+  const bid=S.currentBehavior;
+  const b=B[bid];
+  const s=sett(bid);
+  let html=`<div class="settings-section"><div class="settings-section-title">${b.emoji} ${b.name} — Settings</div><div class="settings-card">`;
+  b.costFields.forEach(f=>{
+    html+=`<div class="settings-row"><div><div class="settings-row-label">${f.label}</div><div class="settings-row-sub">${f.unit||'number'}</div></div><input class="settings-input" id="sf-${f.id}" type="number" value="${s[f.id]||f.val}" inputmode="decimal"></div>`;
+  });
+  html+=`<div class="settings-row"><div><div class="settings-row-label">${b.durField.label}</div><div class="settings-row-sub">${b.durField.unit}</div></div><input class="settings-input" id="sf-${b.durField.id}" type="number" value="${s[b.durField.id]||b.durField.val}" inputmode="decimal"></div>`;
+  html+=`</div></div>`;
+  document.getElementById('settings-fields').innerHTML=html;
+
+  const bl=document.getElementById('settings-beh-list');
+  bl.innerHTML=Object.values(B).map(beh=>{
+    const on=S.activeBehaviors.includes(beh.id);
+    return `<div class="settings-beh-item"><div class="settings-beh-em">${beh.emoji}</div><div class="settings-beh-name">${beh.name}</div><button class="settings-toggle ${on?'on':'off'}" onclick="toggleBehSettings('${beh.id}',this)"></button></div>`;
+  }).join('');
+}
+function toggleBehSettings(bid,btn){
+  const on=btn.classList.contains('on');
+  if(on){
+    if(S.activeBehaviors.length<=1)return;
+    S.activeBehaviors=S.activeBehaviors.filter(x=>x!==bid);
+    if(S.currentBehavior===bid)S.currentBehavior=S.activeBehaviors[0];
+    btn.classList.replace('on','off');
+  }else{
+    if(!S.activeBehaviors.includes(bid)){
+      S.activeBehaviors.push(bid);
+      if(!S.events[bid])S.events[bid]=[];
+      if(!S.settings[bid]){const b=B[bid],cfg={};b.costFields.forEach(f=>{cfg[f.id]=f.val;});cfg[b.durField.id]=b.durField.val;S.settings[bid]=cfg;}
+    }
+    btn.classList.replace('off','on');
+  }
+}
+function saveSettings(){
+  const bid=S.currentBehavior;
+  const b=B[bid];
+  const s=sett(bid)||{};
+  b.costFields.forEach(f=>{const el=document.getElementById('sf-'+f.id);if(el)s[f.id]=parseFloat(el.value)||f.val;});
+  const del=document.getElementById('sf-'+b.durField.id);
+  if(del)s[b.durField.id]=parseFloat(del.value)||b.durField.val;
+  S.settings[bid]=s;
+  save();
+  buildSwitchers();
+  refresh();
+  const btn=document.querySelector('.settings-save-btn');
+  btn.textContent='Saved ✓';
+  setTimeout(()=>btn.textContent='Save changes',1500);
+}
+function confirmReset(){
+  if(confirm('Delete ALL events and settings? This cannot be undone.')){
+    S={activeBehaviors:['smoking'],currentBehavior:'smoking',settings:{},events:{}};
+    localStorage.removeItem('fiend3');
+    document.getElementById('app').style.display='none';
+    document.getElementById('onboard').style.display='flex';
+    pending=new Set(['smoking']);
+    buildOnboard();
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+load();
+buildOnboard();
+if(S.activeBehaviors&&S.activeBehaviors.length&&Object.keys(S.events).length){
+  document.getElementById('onboard').style.display='none';
+  document.getElementById('app').style.display='flex';
+  buildSwitchers();
+  buildSettingsScreen();
+  refresh();
+}
+</script>
+</body>
+</html>
