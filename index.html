@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fiend</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -333,7 +333,7 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
             <div class="settings-beh-item">
               <div style="flex:1">
                 <div class="settings-row-label">Remind me to log</div>
-                <div class="settings-row-sub">Daily nudge if nothing's logged yet</div>
+                <div class="settings-row-sub">Nudges you when you next open the app, if nothing's logged that day</div>
               </div>
               <button class="settings-toggle off" id="notif-toggle" onclick="toggleNotif()"></button>
             </div>
@@ -802,7 +802,7 @@ function generateShare(){
     link.click();
   }).catch(()=>{
     card.style.top='-9999px';card.style.left='-9999px';
-    alert('Share card generated! (In the real app, this downloads as a PNG.)');
+    alert("Couldn't generate the share card — check your connection and try again.");
   });
 }
 
@@ -900,9 +900,12 @@ function checkNotif(){
   const n=S.notif;
   if(!n||!n.enabled||Notification.permission!=='granted')return;
   const now=new Date();
-  const cur=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
   const todayStr=now.toDateString();
-  if(n.lastSent===todayStr||cur!==n.time)return;
+  if(n.lastSent===todayStr)return;
+  const [rh,rm]=(n.time||'20:00').split(':').map(Number);
+  const reminderMins=rh*60+rm;
+  const nowMins=now.getHours()*60+now.getMinutes();
+  if(nowMins<reminderMins)return;
   const loggedToday=S.activeBehaviors.some(bid=>today(bid).length>0);
   n.lastSent=todayStr;
   save();
@@ -976,6 +979,7 @@ if(S.activeBehaviors&&S.activeBehaviors.length&&Object.keys(S.events).length){
 if(S.notif&&S.notif.enabled&&'Notification' in window&&Notification.permission==='granted'){
   startNotifScheduler();
 }
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkNotif();});
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{navigator.serviceWorker.register('service-worker.js').catch(()=>{});});
 }
