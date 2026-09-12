@@ -28,6 +28,8 @@
   --display:'Syne',sans-serif;
   --body:'Space Grotesk',sans-serif;
   --mono:'Space Mono',monospace;
+  --ease:cubic-bezier(0.22,0.61,0.36,1);
+  --ease-pop:cubic-bezier(0.34,1.45,0.64,1);
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
 #root{height:100dvh;max-width:430px;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg)}
@@ -102,9 +104,10 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
 .obs{margin:8px 14px 0;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:13px 15px;font-size:13px;color:var(--text2);line-height:1.6;font-style:italic;min-height:46px;font-family:var(--body)}
 
 /* ── SHEET ── */
-.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:400;display:none;align-items:flex-end;justify-content:center}
-.sheet-bg.open{display:flex}
-.sheet{background:var(--bg2);border-radius:22px 22px 0 0;border-top:1px solid var(--border2);padding:24px 16px calc(env(safe-area-inset-bottom,0px)+26px);width:100%;max-width:430px}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.24s ease}
+.sheet-bg.open{opacity:1;pointer-events:auto}
+.sheet{background:var(--bg2);border-radius:22px 22px 0 0;border-top:1px solid var(--border2);padding:24px 16px calc(env(safe-area-inset-bottom,0px)+26px);width:100%;max-width:430px;transform:translateY(103%);transition:transform 0.34s var(--ease)}
+.sheet-bg.open .sheet{transform:none}
 .sheet-h{font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:3px;letter-spacing:-0.01em}
 .sheet-sub{font-size:13px;color:var(--text2);margin-bottom:18px;font-family:var(--body)}
 .trig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
@@ -204,6 +207,91 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
 .settings-save-btn:active{opacity:0.85}
 .danger-btn{width:100%;padding:14px;background:none;border:1px solid #3a2020;border-radius:13px;color:var(--red);font-size:13px;font-weight:600;font-family:var(--body);cursor:pointer;margin-top:8px}
 .danger-btn:active{background:#1a0a0a}
+
+/* ══ MOTION LAYER ══════════════════════════════════════════════════════════ */
+
+/* screen transitions */
+@keyframes scrFwd{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}
+@keyframes scrBack{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
+@keyframes scrFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes outFwd{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-16px)}}
+@keyframes outBack{from{opacity:1;transform:none}to{opacity:0;transform:translateX(16px)}}
+.screen.active.enter-fwd{animation:scrFwd 0.26s var(--ease)}
+.screen.active.enter-back{animation:scrBack 0.26s var(--ease)}
+.screen.active.enter-fade{animation:scrFade 0.3s var(--ease)}
+.screen.leaving{display:block;pointer-events:none;opacity:0}
+.screen.leaving.out-fwd{animation:outFwd 0.2s ease forwards}
+.screen.leaving.out-back{animation:outBack 0.2s ease forwards}
+
+/* value changes */
+@keyframes bump{0%{transform:scale(1)}32%{transform:scale(1.14)}100%{transform:scale(1)}}
+.bump{animation:bump 0.4s var(--ease-pop)}
+
+/* nav */
+.nav-btn{position:relative}
+.nav-btn::after{content:'';position:absolute;top:0;left:50%;width:24px;height:2px;border-radius:0 0 3px 3px;background:var(--accent);transform:translateX(-50%) scaleX(0);transition:transform 0.28s var(--ease)}
+.nav-btn.active::after{transform:translateX(-50%) scaleX(1)}
+.nav-icon{transition:transform 0.28s var(--ease-pop)}
+.nav-btn.active .nav-icon{transform:translateY(-1px) scale(1.16)}
+.nav-btn:active .nav-icon{transform:scale(0.88)}
+
+/* press feedback */
+.bsw-btn:active{transform:scale(0.94)}
+.t-stat,.stat-card,.insight,.log-item,.settings-card{transition:transform 0.18s var(--ease)}
+.t-stat:active,.stat-card:active{transform:scale(0.97)}
+.trig-btn:active{transform:scale(0.95)}
+.share-btn:active,.settings-save-btn:active,.ob-btn:active{transform:scale(0.985)}
+
+/* trigger sheet buttons */
+@keyframes trigIn{from{opacity:0;transform:translateY(12px) scale(0.96)}to{opacity:1;transform:none}}
+.sheet-bg.open .trig-btn{animation:trigIn 0.34s var(--ease) backwards}
+
+/* list items */
+@keyframes itemIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.log-item,.insight,.beh-opt{animation:itemIn 0.34s var(--ease) backwards}
+@keyframes itemOut{from{opacity:1;max-height:200px}to{opacity:0;transform:translateX(52px);max-height:0;padding-top:0;padding-bottom:0;border-width:0;margin-bottom:-6px}}
+.log-item.removing{animation:itemOut 0.26s ease forwards;pointer-events:none;overflow:hidden}
+
+/* AGAIN button + log burst */
+@keyframes logged{0%{transform:scale(1)}22%{transform:scale(1.035)}100%{transform:scale(1)}}
+.again-btn.logged{animation:logged 0.45s var(--ease-pop)}
+@keyframes fxpop{0%{opacity:0;transform:translate(-50%,-50%) scale(0.6)}18%{opacity:1;transform:translate(-50%,-62%) scale(1.12)}100%{opacity:0;transform:translate(-50%,-200%) scale(1)}}
+.fx-pop{position:fixed;z-index:600;pointer-events:none;font-family:var(--display);font-size:30px;font-weight:800;color:var(--accent);animation:fxpop 0.9s var(--ease) forwards}
+
+/* observation line */
+@keyframes obsIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.obs.fresh{animation:obsIn 0.42s var(--ease)}
+
+/* apartment scene */
+.apt-wrap::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 90% at 50% 0%,rgba(201,242,32,0.055),transparent 62%);animation:amb 9s ease-in-out infinite}
+@keyframes amb{0%,100%{opacity:0.3}50%{opacity:0.9}}
+@keyframes lvlUp{0%{filter:brightness(1)}30%{filter:brightness(1.55)}100%{filter:brightness(1)}}
+.apt-wrap.lvl-up{animation:lvlUp 0.75s ease}
+
+/* score pill */
+.score-pill{transition:border-color 0.35s ease,background 0.35s ease}
+.score-pill.hot{border-color:var(--accent);background:var(--accent-dim)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:78px;transform:translate(-50%,16px);background:var(--bg5);border:1px solid var(--border2);color:var(--text);font-family:var(--body);font-size:13px;font-weight:600;line-height:1.4;padding:11px 18px;border-radius:100px;z-index:700;opacity:0;pointer-events:none;transition:opacity 0.25s ease,transform 0.25s var(--ease);max-width:86%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.err{border-color:var(--red);color:var(--red)}
+
+/* onboarding exit */
+@keyframes obOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.02)}}
+#onboard.ob-out{animation:obOut 0.3s var(--ease) forwards;pointer-events:none}
+
+/* onboarding step transition */
+@keyframes stepIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+#ob-step2.step-in{animation:stepIn 0.32s var(--ease)}
+
+/* app entry */
+@keyframes appIn{from{opacity:0;transform:scale(0.985)}to{opacity:1;transform:none}}
+#app.booting{animation:appIn 0.4s var(--ease)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+}
 </style>
 </head>
 <body>
@@ -382,6 +470,8 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
   </div>
 </div>
 
+<div id="toast"></div>
+
 <!-- SHARE CARD (off-screen) -->
 <div id="share-card">
   <div class="sc-logo">Fiend.</div>
@@ -487,6 +577,75 @@ const chair=`<rect x="172" y="66" width="52" height="40" rx="6" fill="#1c1818"/>
 const table=`<rect x="258" y="80" width="94" height="6" rx="2" fill="#211d18"/><rect x="266" y="86" width="6" height="30" rx="1" fill="#1c1814"/><rect x="340" y="86" width="6" height="30" rx="1" fill="#1c1814"/>`;
 const win=`<rect x="22" y="12" width="64" height="50" rx="2" fill="#0e1a12" stroke="#252528" stroke-width="1"/><line x1="54" y1="12" x2="54" y2="62" stroke="#252528" stroke-width="0.5"/><line x1="22" y1="37" x2="86" y2="37" stroke="#252528" stroke-width="0.5"/>`;
 const monitor=`<rect x="34" y="62" width="62" height="30" rx="3" fill="#0A0A0C" stroke="#2a2a30" stroke-width="0.5"/><rect x="58" y="92" width="12" height="6" rx="1" fill="#181818"/>`;
+// ─── MOTION HELPERS ───────────────────────────────────────────────────────────
+const RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const _sig = {};
+
+function bump(el){ if(!el||RM) return; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+
+function setTxt(id,v){
+  const el=document.getElementById(id); if(!el) return;
+  v=String(v); if(el.textContent===v) return;
+  el.textContent=v; bump(el);
+}
+
+function setNum(id,v){
+  const el=document.getElementById(id); if(!el) return;
+  const to=Number(v);
+  const from=parseFloat(String(el.textContent).replace(/[^0-9.\-]/g,''));
+  if(!isFinite(to)){ setTxt(id,v); return; }
+  if(!isFinite(from)||from===to||RM||typeof requestAnimationFrame!=='function'){
+    if(String(el.textContent)!==String(to)){ el.textContent=to; bump(el); }
+    return;
+  }
+  bump(el);
+  const t0=(window.performance&&performance.now)?performance.now():Date.now(), dur=440;
+  const step=now=>{
+    const p=Math.min(((now||Date.now())-t0)/dur,1), e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(to-from)*e);
+    if(p<1) requestAnimationFrame(step); else el.textContent=to;
+  };
+  requestAnimationFrame(step);
+}
+
+// Re-render a list only when its contents actually changed, so entry
+// animations don't restage on every tab switch.
+function renderOnce(id,html,sig){
+  const el=document.getElementById(id); if(!el) return null;
+  if(_sig[id]===sig) return null;
+  _sig[id]=sig; el.innerHTML=html; return el;
+}
+
+function stagger(el,sel,step,cap){
+  if(!el||RM) return;
+  const nodes=el.querySelectorAll(sel);
+  for(let i=0;i<nodes.length;i++) nodes[i].style.animationDelay=(Math.min(i,cap||12)*step)+'ms';
+}
+
+function toast(msg,isErr){
+  const t=document.getElementById('toast'); if(!t){ return; }
+  t.textContent=msg; t.classList.toggle('err',!!isErr); t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function burst(txt){
+  if(RM) return;
+  const btn=document.getElementById('again-btn'); if(!btn||!btn.getBoundingClientRect) return;
+  const r=btn.getBoundingClientRect(); if(!r.width) return;
+  const el=document.createElement('div');
+  el.className='fx-pop'; el.textContent=txt;
+  el.style.left=(r.left+r.width/2)+'px';
+  el.style.top=(r.top+r.height/2)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); },950);
+}
+
+function logSig(bid){
+  const a=evts(bid);
+  let max=0; for(let i=0;i<a.length;i++) if(a[i].id>max) max=a[i].id;
+  return bid+':'+a.length+':'+max;
+}
+
 function setSVG(id,html){ const el=document.getElementById(id); if(el) el.innerHTML=html; }
 function drawSmokingApt(lvl){setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="188" y="72" width="30" height="5" rx="1" fill="#2a2020" transform="rotate(-12 203 74)"/><rect x="202" y="80" width="20" height="3" rx="1" fill="#252020" transform="rotate(6 212 81)"/>':'')+(lvl>=3?'<rect x="268" y="72" width="20" height="8" rx="2" fill="#221e1a"/><ellipse cx="278" cy="72" rx="5" ry="2" fill="#66605a" opacity="0.5"/>':'')+(lvl>=4?'<rect x="134" y="76" width="14" height="3" rx="1" fill="#252020" transform="rotate(18 141 77)"/><rect x="150" y="72" width="10" height="2" rx="1" fill="#252020" transform="rotate(-8 155 73)"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0e0c0a" opacity="0.5"/>':''));}
 function drawVapingApt(lvl){setSVG('apt-svg',base+`<rect x="20" y="12" width="70" height="50" rx="3" fill="#0a1020" stroke="#252528" stroke-width="1"/>`.replace('0a1020','0a1020')+desk+`<rect x="34" y="72" width="14" height="26" rx="4" fill="#1e2030" stroke="#303248" stroke-width="0.5"/>`.replace('>','/>')+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<ellipse cx="95" cy="28" rx="22" ry="10" fill="#1a1e2a" opacity="0.25"/>':'')+(lvl>=3?'<rect x="268" y="70" width="28" height="10" rx="3" fill="#1e2030" stroke="#303248" stroke-width="0.5"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0c14" opacity="0.5"/>':''));}
@@ -521,6 +680,10 @@ function buildOnboard(){
       <div class="beh-info"><div class="beh-name">${b.name}</div><div class="beh-unit">${b.unitLabel}</div></div>
       <div class="beh-check">${pending.has(b.id)?'✓':''}</div>
     </div>`).join('');
+  staggerOnboard();
+}
+function staggerOnboard(){
+  stagger(document.getElementById('beh-list'),'.beh-opt',34,12);
 }
 function toggleB(id,el){
   if(pending.has(id)){if(pending.size>1){pending.delete(id);el.classList.remove('sel');el.querySelector('.beh-check').textContent='';}}
@@ -544,7 +707,9 @@ function onboardNext(){
     if(!pending.size)return;
     obStep=2;
     document.getElementById('ob-step1').style.display='none';
-    document.getElementById('ob-step2').style.display='flex';
+    const st2=document.getElementById('ob-step2');
+    st2.style.display='flex';
+    st2.classList.remove('step-in'); void st2.offsetWidth; st2.classList.add('step-in');
     document.getElementById('ob-progress').textContent='Step 2 of 2';
     document.getElementById('ob-sub').textContent='These power your cost and time stats. Defaults are fine — you can change them later in Settings.';
     document.getElementById('ob-btn').textContent='Start tracking →';
@@ -569,11 +734,23 @@ function completeOnboard(){
     S.events[bid]=S.events[bid]||[];
   });
   save();
-  document.getElementById('onboard').style.display='none';
-  document.getElementById('app').style.display='flex';
+  const ob=document.getElementById('onboard');
+  if(RM){ ob.style.display='none'; }
+  else { ob.classList.add('ob-out'); setTimeout(()=>{ ob.style.display='none'; ob.classList.remove('ob-out'); },300); }
+  showApp();
   buildSwitchers();
   buildSettingsScreen();
   refresh();
+}
+function showApp(){
+  const appEl=document.getElementById('app');
+  appEl.style.display='flex';
+  if(RM) return;
+  appEl.classList.add('booting');
+  setTimeout(()=>appEl.classList.remove('booting'),450);
+  const home=document.getElementById('screen-home');
+  home.classList.remove('enter-fade'); void home.offsetWidth; home.classList.add('enter-fade');
+  setTimeout(()=>home.classList.remove('enter-fade'),360);
 }
 
 // ─── SWITCHERS ────────────────────────────────────────────────────────────────
@@ -593,7 +770,7 @@ function switchB(bid){S.currentBehavior=bid;buildSwitchers();refresh();}
 // ─── SHEET ────────────────────────────────────────────────────────────────────
 function openSheet(){
   const b=B[S.currentBehavior];
-  document.getElementById('trig-grid').innerHTML=b.triggers.map(t=>`<button class="trig-btn" onclick="logEvent('${t}')">${t}</button>`).join('');
+  document.getElementById('trig-grid').innerHTML=b.triggers.map((t,i)=>`<button class="trig-btn" style="animation-delay:${Math.min(i,9)*26}ms" onclick="logEvent('${t}')">${t}</button>`).join('');
   document.getElementById('sheet-bg').classList.add('open');
 }
 function bgClose(e){if(e.target===document.getElementById('sheet-bg'))document.getElementById('sheet-bg').classList.remove('open');}
@@ -604,22 +781,53 @@ function logEvent(trigger){
   S.events[bid].push({id:Date.now(),timestamp:Date.now(),trigger});
   save();
   const b=B[bid];
-  document.getElementById('home-obs').textContent=b.obs[Math.floor(Math.random()*b.obs.length)];
+  const obs=document.getElementById('home-obs');
+  obs.textContent=b.obs[Math.floor(Math.random()*b.obs.length)];
+  obs.classList.remove('fresh'); void obs.offsetWidth; obs.classList.add('fresh');
+  if(navigator.vibrate) try{ navigator.vibrate(18); }catch(e){}
+  const btn=document.getElementById('again-btn');
+  if(btn){ btn.classList.remove('logged'); void btn.offsetWidth; btn.classList.add('logged');
+           setTimeout(()=>btn.classList.remove('logged'),480); }
+  burst('+1');
   refresh();
 }
 
 // ─── DELETE EVENT ─────────────────────────────────────────────────────────────
 function deleteEvent(bid,id){
-  S.events[bid]=(S.events[bid]||[]).filter(e=>e.id!==id);
-  save();refresh();
+  const node=document.querySelector('.log-item[data-id="'+id+'"]');
+  const commit=()=>{
+    S.events[bid]=(S.events[bid]||[]).filter(e=>e.id!==id);
+    save();
+    if(node&&node.parentNode) node.parentNode.removeChild(node);
+    // Keep the cached signature in sync so the remaining rows don't re-stage.
+    if(evts(bid).length) _sig['log-list']=logSig(bid); else delete _sig['log-list'];
+    refresh();
+  };
+  if(node&&!RM){ node.classList.add('removing'); setTimeout(commit,250); }
+  else commit();
 }
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
+const TABS=['home','dash','log','report','settings'];
+let curTab='home';
 function tab(t){
-  ['home','dash','log','report','settings'].forEach(s=>{
-    document.getElementById('screen-'+s).classList.toggle('active',s===t);
-    document.getElementById('nav-'+s).classList.toggle('active',s===t);
-  });
+  TABS.forEach(s=>document.getElementById('nav-'+s).classList.toggle('active',s===t));
+  if(t===curTab){ refresh(); return; }
+  const oldEl=document.getElementById('screen-'+curTab);
+  const newEl=document.getElementById('screen-'+t);
+  const fwd=TABS.indexOf(t)>TABS.indexOf(curTab);
+  const outCls=fwd?'out-fwd':'out-back', inCls=fwd?'enter-fwd':'enter-back';
+  oldEl.classList.remove('active','enter-fwd','enter-back','enter-fade');
+  newEl.classList.remove('enter-fwd','enter-back','enter-fade');
+  if(RM){
+    newEl.classList.add('active');
+  } else {
+    oldEl.classList.add('leaving',outCls);
+    setTimeout(()=>oldEl.classList.remove('leaving','out-fwd','out-back'),210);
+    newEl.classList.add('active',inCls);
+    setTimeout(()=>newEl.classList.remove(inCls),280);
+  }
+  curTab=t;
   refresh();
 }
 
@@ -690,6 +898,7 @@ function fmtTs(ts){
 }
 
 // ─── REFRESH ──────────────────────────────────────────────────────────────────
+let lastLvl=null;
 function refresh(){
   const bid=S.currentBehavior;
   const b=B[bid];
@@ -707,40 +916,56 @@ function refresh(){
 
   // apartment
   b.draw(lvl);
+  if(lastLvl!==null&&lvl!==lastLvl&&!RM){
+    const w=document.querySelector('.apt-wrap');
+    if(w){ w.classList.remove('lvl-up'); void w.offsetWidth; w.classList.add('lvl-up'); }
+  }
+  lastLvl=lvl;
 
   // home
   document.getElementById('again-em').textContent=b.emoji;
   document.getElementById('again-lbl').textContent=b.verb;
-  document.getElementById('h-score').textContent=sc;
-  document.getElementById('h-tier').textContent=tr;
-  document.getElementById('h-count').textContent=td.length;
-  document.getElementById('h-cost').textContent=pc>0?fmtC(td.length*pc):'—';
-  document.getElementById('h-time').textContent=fmtT(td.length*dur);
+  const prevScore=parseFloat(document.getElementById('h-score').textContent);
+  setNum('h-score',sc);
+  setTxt('h-tier',tr);
+  setNum('h-count',td.length);
+  setTxt('h-cost',pc>0?fmtC(td.length*pc):'—');
+  setTxt('h-time',fmtT(td.length*dur));
   document.getElementById('h-time-lbl').textContent=b.timeLabel;
+  const pill=document.querySelector('.score-pill');
+  if(pill&&isFinite(prevScore)&&sc>prevScore){
+    pill.classList.add('hot'); setTimeout(()=>pill.classList.remove('hot'),900);
+  }
   const streakMs=currentStreakMs(bid);
   const best=bestGapMs(bid);
-  document.getElementById('h-streak').textContent=streakMs!=null?fmtStreak(streakMs):'—';
+  setTxt('h-streak',streakMs!=null?fmtStreak(streakMs):'—');
   document.getElementById('streak-callout').classList.toggle('show',streakMs!=null&&best>0&&streakMs>best);
 
   // dash
-  document.getElementById('d-tc').textContent=td.length;
+  setNum('d-tc',td.length);
   document.getElementById('d-tc-lbl').textContent=b.unitLabel;
-  document.getElementById('d-tco').textContent=pc>0?fmtC(td.length*pc):'—';
-  document.getElementById('d-tt').textContent=fmtT(td.length*dur);
+  setTxt('d-tco',pc>0?fmtC(td.length*pc):'—');
+  setTxt('d-tt',fmtT(td.length*dur));
   document.getElementById('d-tt-lbl').textContent=b.timeLabel;
   if(td.length>1){
     const sorted=[...td].sort((a,b)=>a.timestamp-b.timestamp);
     const gaps=[];for(let i=1;i<sorted.length;i++)gaps.push((sorted[i].timestamp-sorted[i-1].timestamp)/60000);
-    document.getElementById('d-tg').textContent=fmtT(gaps.reduce((a,b)=>a+b,0)/gaps.length);
-  }else document.getElementById('d-tg').textContent='—';
+    setTxt('d-tg',fmtT(gaps.reduce((a,b)=>a+b,0)/gaps.length));
+  }else setTxt('d-tg','—');
   const apd=life.length<2?life.length:(()=>{const f=Math.min(...life.map(e=>e.timestamp));const dy=Math.max((Date.now()-f)/864e5,1);return(life.length/dy).toFixed(1);})();
-  document.getElementById('d-lc').textContent=life.length;
+  setNum('d-lc',life.length);
   document.getElementById('d-lc-lbl').textContent=b.unitLabel;
-  document.getElementById('d-lco').textContent=pc>0?fmtC(life.length*pc):'—';
-  document.getElementById('d-lt').textContent=fmtT(life.length*dur);
+  setTxt('d-lco',pc>0?fmtC(life.length*pc):'—');
+  setTxt('d-lt',fmtT(life.length*dur));
   document.getElementById('d-lt-lbl').textContent=b.timeLabel;
-  document.getElementById('d-la').textContent=apd;
-  document.getElementById('tbar').innerHTML=tb.length?tb.slice(0,6).map(t=>`<div class="tbar-row"><div class="tbar-lbl">${t.label}</div><div class="tbar-track"><div class="tbar-fill" style="width:${t.pct}%"></div></div><div class="tbar-pct">${t.pct}%</div></div>`).join(''):'<div class="empty">No events yet.</div>';
+  setTxt('d-la',apd);
+  const tbTop=tb.slice(0,6);
+  const tbHtml=tbTop.length?tbTop.map(t=>`<div class="tbar-row"><div class="tbar-lbl">${t.label}</div><div class="tbar-track"><div class="tbar-fill" data-pct="${t.pct}" style="width:0"></div></div><div class="tbar-pct">${t.pct}%</div></div>`).join(''):'<div class="empty">No events yet.</div>';
+  const tbEl=renderOnce('tbar',tbHtml,tbTop.map(t=>t.label+':'+t.pct).join('|'));
+  if(tbEl){
+    const grow=()=>tbEl.querySelectorAll('.tbar-fill').forEach(f=>{f.style.width=f.getAttribute('data-pct')+'%';});
+    if(RM||typeof requestAnimationFrame!=='function') grow(); else requestAnimationFrame(()=>requestAnimationFrame(grow));
+  }
   const ins=[];
   if(life.length>=3){
     if(tb[0])ins.push(`${tb[0].pct}% of events follow ${tb[0].label.toLowerCase()}.`);
@@ -749,29 +974,31 @@ function refresh(){
     if(life.length>=8){const days={};life.forEach(e=>{const d=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(e.timestamp).getDay()];days[d]=(days[d]||0)+1;});const td2=Object.entries(days).sort((a,b)=>b[1]-a[1])[0][0];ins.push(`${td2} is your highest-volume day.`);}
     if(tb.length>=2&&tb[0].count>tb[1].count*1.5)ins.push(`${tb[0].label} generates more events than ${tb[1].label} combined.`);
   }
-  document.getElementById('insights').innerHTML=ins.length?ins.map(i=>`<div class="insight"><div class="ins-dot"></div><span>${i}</span></div>`).join(''):'<div class="empty">Log a few events and insights will appear.</div>';
+  const insEl=renderOnce('insights',ins.length?ins.map(i=>`<div class="insight"><div class="ins-dot"></div><span>${i}</span></div>`).join(''):'<div class="empty">Log a few events and insights will appear.</div>',bid+'||'+ins.join('|'));
+  stagger(insEl,'.insight',45,8);
 
   // log
   const allEvts=[...life].sort((a,b)=>b.timestamp-a.timestamp);
-  document.getElementById('log-list').innerHTML=allEvts.length?allEvts.map(e=>`
-    <div class="log-item">
+  const logEl=renderOnce('log-list',allEvts.length?allEvts.map(e=>`
+    <div class="log-item" data-id="${e.id}">
       <div class="log-item-left">
         <div class="log-time">${fmtTs(e.timestamp)}</div>
         <div class="log-trigger">${e.trigger}</div>
         <div class="log-beh">${b.emoji} ${b.name}</div>
       </div>
       <button class="log-del" onclick="deleteEvent('${bid}',${e.id})" title="Delete">×</button>
-    </div>`).join(''):'<div class="log-empty">No events logged yet.<br>Tap AGAIN on the home screen.</div>';
+    </div>`).join(''):'<div class="log-empty">No events logged yet.<br>Tap AGAIN on the home screen.</div>',logSig(bid));
+  stagger(logEl,'.log-item',32,8);
 
   // report
   document.getElementById('r-title').textContent=`${b.emoji} ${b.name} — This Week`;
-  document.getElementById('r-ev').textContent=wk.length;
+  setNum('r-ev',wk.length);
   document.getElementById('r-ev-lbl').textContent=b.unitLabel;
   document.getElementById('r-cost').textContent=pc>0?fmtC(wk.length*pc):'—';
   document.getElementById('r-hrs').textContent=fmtT(wk.length*dur);
   document.getElementById('r-hrs-lbl').textContent=b.timeLabel;
   document.getElementById('r-trig').textContent=top;
-  document.getElementById('r-score').textContent=sc;
+  setNum('r-score',sc);
   document.getElementById('r-tier').textContent=tr;
   document.getElementById('r-desc').textContent=ds;
   if(wk.length>0){const k=top in b.roast?top:'Other';document.getElementById('r-quote').textContent=b.roast[k];}
@@ -802,7 +1029,7 @@ function generateShare(){
     link.click();
   }).catch(()=>{
     card.style.top='-9999px';card.style.left='-9999px';
-    alert("Couldn't generate the share card — check your connection and try again.");
+    toast("Couldn't generate the share card — check your connection.",true);
   });
 }
 
@@ -855,8 +1082,9 @@ function saveSettings(){
   buildSwitchers();
   refresh();
   const btn=document.querySelector('.settings-save-btn');
-  btn.textContent='Saved ✓';
+  btn.textContent='Saved ✓'; bump(btn);
   setTimeout(()=>btn.textContent='Save changes',1500);
+  toast('Settings saved.');
 }
 // ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
 let notifInterval=null;
@@ -874,12 +1102,12 @@ function toggleNotif(){
   S.notif=S.notif||{enabled:false,time:'20:00'};
   const n=S.notif;
   if(!n.enabled){
-    if(!('Notification' in window)){alert('Notifications are not supported in this browser.');return;}
+    if(!('Notification' in window)){toast('Notifications are not supported in this browser.',true);return;}
     Notification.requestPermission().then(perm=>{
       if(perm==='granted'){
         n.enabled=true;save();buildNotifSettings();startNotifScheduler();
       }else{
-        alert('Notification permission was not granted.');
+        toast('Notification permission was not granted.',true);
       }
     });
   }else{
@@ -947,9 +1175,9 @@ function importData(event){
       buildSwitchers();
       buildSettingsScreen();
       refresh();
-      alert('Data imported successfully.');
+      toast('Data imported successfully.');
     }catch(e){
-      alert('That file doesn\'t look like a Fiend backup.');
+      toast('That file doesn\'t look like a Fiend backup.',true);
     }
   };
   reader.readAsText(file);
@@ -971,7 +1199,7 @@ load();
 buildOnboard();
 if(S.activeBehaviors&&S.activeBehaviors.length&&Object.keys(S.events).length){
   document.getElementById('onboard').style.display='none';
-  document.getElementById('app').style.display='flex';
+  showApp();
   buildSwitchers();
   buildSettingsScreen();
   refresh();
