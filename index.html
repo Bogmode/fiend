@@ -308,6 +308,55 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
 @keyframes fxSway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
 @keyframes fxSlide{0%{opacity:0;transform:translateX(34px)}22%{opacity:1;transform:translateX(0)}88%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(0)}}
 
+/* ── RESPONSIVE: wide phone / tablet ── */
+@media (min-width:640px){
+  #root{max-width:520px}
+  .again-btn{height:80px}
+}
+
+/* ── RESPONSIVE: desktop — left rail, framed workspace ── */
+@media (min-width:1000px){
+  body{background:radial-gradient(120% 85% at 50% -12%,#17171c,var(--bg) 62%)}
+  #root{max-width:1120px;height:calc(100dvh - 48px);margin:24px auto;border:1px solid var(--border);border-radius:22px;box-shadow:0 28px 80px rgba(0,0,0,0.55)}
+  #app{flex-direction:row}
+
+  nav{order:-1;width:198px;height:auto;flex-direction:column;align-items:stretch;gap:2px;padding:22px 12px;border-top:none;border-right:1px solid var(--border)}
+  nav::before{content:'Fiend.';font-family:var(--display);font-size:23px;font-weight:800;letter-spacing:-0.02em;color:var(--text);padding:2px 12px 22px}
+  .nav-btn{flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:11px 12px;border-radius:11px;transition:background 0.16s,color 0.16s}
+  .nav-btn.active{background:var(--accent-dim)}
+  .nav-icon{font-size:16px}
+  .nav-lbl{font-size:11px;letter-spacing:0.1em}
+  .nav-btn::after{top:50%;left:0;width:2px;height:20px;border-radius:0 3px 3px 0;transform:translateY(-50%) scaleY(0)}
+  .nav-btn.active::after{transform:translateY(-50%) scaleY(1)}
+  .nav-btn.active .nav-icon{transform:none}
+  .nav-btn:active .nav-icon{transform:scale(0.9)}
+
+  .screen{padding:12px 26px 32px}
+  .screen > *{max-width:660px;margin-left:auto!important;margin-right:auto!important}
+  .apt-wrap{height:auto;aspect-ratio:390/144;margin-top:12px}
+  .again-btn{height:86px;font-size:29px}
+  .dash,.log-wrap,.report-wrap,.settings-wrap{padding-left:0;padding-right:0}
+
+  #onboard{padding-top:4vh}
+  #onboard > *{max-width:520px;width:100%;margin-left:auto;margin-right:auto}
+
+  .sheet-bg{align-items:center}
+  .sheet{max-width:452px;border-radius:18px;border:1px solid var(--border2);padding:26px 22px;transform:translateY(14px) scale(0.985)}
+  .sheet-bg.open .sheet{transform:none}
+  #toast{bottom:42px}
+}
+
+/* ── POINTER: hover affordances (desktop only) ── */
+@media (hover:hover) and (pointer:fine){
+  .nav-btn:hover{color:var(--text2)}
+  .nav-btn.active:hover{color:var(--accent)}
+  .again-btn:hover{filter:brightness(1.06)}
+  .ob-btn:hover,.settings-save-btn:hover{filter:brightness(1.06)}
+  .bsw-btn:hover{border-color:var(--border2);color:var(--text)}
+  .bsw-btn.active:hover{color:var(--accent)}
+  .trig-btn:hover{background:var(--bg5);border-color:var(--border2)}
+}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
 }
