@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'fiend-v3';
+const CACHE_VERSION = 'fiend-v4';
 const APP_SHELL = [
   './',
   './index.html',

@@ -289,6 +289,25 @@ nav{height:58px;background:var(--bg2);border-top:1px solid var(--border);display
 @keyframes appIn{from{opacity:0;transform:scale(0.985)}to{opacity:1;transform:none}}
 #app.booting{animation:appIn 0.4s var(--ease)}
 
+
+/* scene fx — per-behavior animated props */
+#apt-svg .fxp{transform-box:fill-box;transform-origin:center}
+@keyframes fxSmoke{0%{opacity:0;transform:translate(0,0) scale(.45)}14%{opacity:.5}100%{opacity:0;transform:translate(8px,-30px) scale(2.3)}}
+@keyframes fxSmoke2{0%{opacity:0;transform:translate(0,0) scale(.45)}14%{opacity:.42}100%{opacity:0;transform:translate(-9px,-33px) scale(2.6)}}
+@keyframes fxVapor{0%{opacity:0;transform:translate(0,0) scale(.4)}12%{opacity:.4}100%{opacity:0;transform:translate(13px,-26px) scale(3.2)}}
+@keyframes fxGlow{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+@keyframes fxBub{0%{opacity:0;transform:translateY(0) scale(.5)}22%{opacity:.8}100%{opacity:0;transform:translateY(-13px) scale(1.15)}}
+@keyframes fxBubT{0%{opacity:0;transform:translateY(0) scale(.5)}18%{opacity:.75}100%{opacity:0;transform:translateY(-22px) scale(1.1)}}
+@keyframes fxFizz{0%{opacity:0;transform:translateY(0) scale(.4)}25%{opacity:.85}100%{opacity:0;transform:translateY(-15px) scale(1)}}
+@keyframes fxFlick{0%,100%{opacity:.22}38%{opacity:.62}44%{opacity:.16}61%{opacity:.55}78%{opacity:.3}}
+@keyframes fxScan{from{transform:translateY(-8px)}to{transform:translateY(48px)}}
+@keyframes fxFeed{from{transform:translateY(0)}to{transform:translateY(-36px)}}
+@keyframes fxReel{from{transform:translateY(0)}to{transform:translateY(-36px)}}
+@keyframes fxBlink{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes fxJit{0%,100%{transform:translate(0,0)}25%{transform:translate(.7px,-.6px)}50%{transform:translate(-.6px,.5px)}75%{transform:translate(.5px,.7px)}}
+@keyframes fxSway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
+@keyframes fxSlide{0%{opacity:0;transform:translateX(34px)}22%{opacity:1;transform:translateX(0)}88%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(0)}}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
 }
@@ -647,15 +666,176 @@ function logSig(bid){
 }
 
 function setSVG(id,html){ const el=document.getElementById(id); if(el) el.innerHTML=html; }
-function drawSmokingApt(lvl){setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="188" y="72" width="30" height="5" rx="1" fill="#2a2020" transform="rotate(-12 203 74)"/><rect x="202" y="80" width="20" height="3" rx="1" fill="#252020" transform="rotate(6 212 81)"/>':'')+(lvl>=3?'<rect x="268" y="72" width="20" height="8" rx="2" fill="#221e1a"/><ellipse cx="278" cy="72" rx="5" ry="2" fill="#66605a" opacity="0.5"/>':'')+(lvl>=4?'<rect x="134" y="76" width="14" height="3" rx="1" fill="#252020" transform="rotate(18 141 77)"/><rect x="150" y="72" width="10" height="2" rx="1" fill="#252020" transform="rotate(-8 155 73)"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0e0c0a" opacity="0.5"/>':''));}
-function drawVapingApt(lvl){setSVG('apt-svg',base+`<rect x="20" y="12" width="70" height="50" rx="3" fill="#0a1020" stroke="#252528" stroke-width="1"/>`.replace('0a1020','0a1020')+desk+`<rect x="34" y="72" width="14" height="26" rx="4" fill="#1e2030" stroke="#303248" stroke-width="0.5"/>`.replace('>','/>')+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<ellipse cx="95" cy="28" rx="22" ry="10" fill="#1a1e2a" opacity="0.25"/>':'')+(lvl>=3?'<rect x="268" y="70" width="28" height="10" rx="3" fill="#1e2030" stroke="#303248" stroke-width="0.5"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0c14" opacity="0.5"/>':''));}
-function drawWeedApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="30" y="60" width="22" height="7" rx="2" fill="#221e18"/>`.replace('/>','>')+`</rect>`+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="190" y="74" width="34" height="4" rx="1" fill="#1e221c" transform="rotate(-8 207 76)"/>':'')+(lvl>=3?'<rect x="268" y="72" width="22" height="8" rx="2" fill="#221e18"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0e0a" opacity="0.5"/>':''));}
-function drawDoomApt(lvl){setSVG('apt-svg',base+`<rect x="20" y="18" width="80" height="56" rx="3" fill="#0a0e1a" stroke="#252528" stroke-width="1"/><rect x="22" y="20" width="76" height="52" rx="2" fill="#0e1224" opacity="0.9"/>`.replace('0.9','0.9')+(lvl>=2?'<rect x="22" y="20" width="76" height="52" rx="2" fill="#141830" opacity="0.5"/>':'')+(lvl>=1?'<rect x="155" y="28" width="36" height="58" rx="4" fill="#1e1e22" stroke="#2a2a30" stroke-width="0.5"/><rect x="159" y="32" width="28" height="50" rx="2" fill="#0a0a14"/>':'')+`<rect x="148" y="66" width="122" height="50" rx="6" fill="#1c1818"/><rect x="142" y="113" width="134" height="7" rx="3" fill="#181414"/><rect x="148" y="120" width="10" height="16" rx="2" fill="#181414"/><rect x="256" y="120" width="10" height="16" rx="2" fill="#181414"/>`.replace('0.5','0.5')+table+(lvl>=2?plantW:plantH)+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#080a10" opacity="0.6"/>':''));}
-function drawAlcoholApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="28" y="58" width="10" height="32" rx="3" fill="#2a3020" stroke="#3a4030" stroke-width="0.5"/><rect x="30" y="56" width="6" height="4" rx="2" fill="#3a4030"/><rect x="44" y="66" width="9" height="26" rx="3" fill="#2a2c20" stroke="#3a3c30" stroke-width="0.5"/>`.replace('0.5','0.5')+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="60" y="68" width="8" height="24" rx="3" fill="#2a2820" stroke="#3a3830" stroke-width="0.5"/>':'')+(lvl>=3?'<rect x="268" y="72" width="38" height="10" rx="2" fill="#201a14"/><rect x="270" y="74" width="8" height="26" rx="3" fill="#2a2c20" stroke="#3a3c30" stroke-width="0.5"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#100a08" opacity="0.5"/>':''));}
-function drawEnergyApt(lvl){const can='<rect x="266" y="58" width="14" height="30" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="268" y="54" width="10" height="6" rx="2" fill="#283820"/>';setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+can+(lvl>=1?'<rect x="284" y="60" width="13" height="28" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="286" y="56" width="9" height="6" rx="2" fill="#283820"/>':'')+(lvl>=3?'<rect x="86" y="94" width="13" height="26" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="88" y="90" width="9" height="6" rx="2" fill="#283820"/>':'')+(lvl>=4?'<rect x="302" y="62" width="12" height="26" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="304" y="58" width="8" height="6" rx="2" fill="#283820"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#080e06" opacity="0.6"/>':''));}
-function drawGamblingApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="34" y="60" width="62" height="32" rx="3" fill="#0A0A0C" stroke="#2a2a30" stroke-width="0.5"/><rect x="58" y="92" width="12" height="5" rx="1" fill="#181818"/>`.replace('/>','>')+`</rect>`+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="268" y="66" width="22" height="16" rx="2" fill="#1e1c14" stroke="#2e2c24" stroke-width="0.5"/><rect x="272" y="70" width="4" height="4" rx="1" fill="#aa8820" opacity="0.7"/><rect x="280" y="70" width="4" height="4" rx="1" fill="#aa2020" opacity="0.7"/>':'')+(lvl>=3?'<rect x="294" y="68" width="20" height="14" rx="2" fill="#1e1c14" stroke="#2e2c24" stroke-width="0.5"/><rect x="298" y="71" width="4" height="4" rx="1" fill="#2088aa" opacity="0.7"/><rect x="306" y="71" width="4" height="4" rx="1" fill="#20aa20" opacity="0.7"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#100a06" opacity="0.6"/>':''));}
-function drawShoppingApt(lvl){const box='<rect x="260" y="60" width="24" height="28" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/>';setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?box:'')+(lvl>=2?'<rect x="28" y="80" width="26" height="28" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="32" y="76" width="18" height="6" rx="1" fill="#2a2c38"/>':'')+(lvl>=3?'<rect x="60" y="78" width="24" height="26" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="64" y="74" width="16" height="6" rx="1" fill="#2a2c38"/><rect x="287" y="62" width="22" height="26" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/>':'')+(lvl>=4?'<rect x="91" y="76" width="22" height="24" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="95" y="72" width="14" height="6" rx="1" fill="#2a2c38"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#06080e" opacity="0.6"/>':''));}
-function drawAdultApt(lvl){setSVG('apt-svg',base+`<rect x="22" y="12" width="64" height="50" rx="2" fill="#14100e" stroke="#252528" stroke-width="1"/>`+(lvl>=3?'<rect x="22" y="12" width="64" height="50" rx="2" fill="#0a0808" opacity="0.7"/>':'')+`<rect x="14" y="88" width="200" height="8" rx="3" fill="#1c1818"/><rect x="14" y="96" width="200" height="20" rx="3" fill="#181414"/><rect x="14" y="116" width="200" height="10" rx="2" fill="#141010"/>`.replace('/>','>')+`</rect>`+table+(lvl>=2?plantW:plantH)+`<rect x="28" y="56" width="34" height="52" rx="4" fill="#1e1e22" stroke="#2a2a30" stroke-width="0.5"/><rect x="31" y="59" width="28" height="46" rx="2" fill="${lvl>=1?'#0a0a14':'#121220'}"/>`.replace('/>','>')+`</rect>`+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0808" opacity="0.7"/>':''));}
+
+// ─── SCENE FX (per-behavior animated props) ──────────────────────────────────
+// Speed scales with degradation level: the worse the apartment, the busier the prop.
+const fxSpd=(lvl,fast,slow)=>(slow-(slow-fast)*(Math.min(lvl,5)/5)).toFixed(2);
+const fxWisp=(x,y,rx,dur,dly,kf,fill)=>`<ellipse class="fxp" cx="${x}" cy="${y}" rx="${rx}" ry="${(rx*0.78).toFixed(2)}" fill="${fill||'#c4c9bc'}" opacity="0" style="animation:${kf} ${dur}s ease-out ${dly}s infinite"/>`;
+const fxEmber=(x,y,r,col,dur)=>`<ellipse class="fxp" cx="${x}" cy="${y}" rx="${r*3.2}" ry="${r*2.4}" fill="${col}" opacity="0.16" style="animation:fxGlow ${dur}s ease-in-out infinite"/><ellipse class="fxp" cx="${x}" cy="${y}" rx="${r}" ry="${(r*0.72).toFixed(2)}" fill="${col}" style="animation:fxGlow ${dur}s ease-in-out infinite"/>`;
+
+// weed — blazing bong on the desk: bubbling water, glowing bowl, smoke off the mouthpiece
+function fxWeed(lvl){
+  const s=fxSpd(lvl,1.9,3.0), b=fxSpd(lvl,0.85,1.5);
+  let bub='';
+  [[127,87,0],[131,88,.35],[135,87,.7],[129,86,1.05],[134,88,1.4]].forEach(([x,y,d],i)=>{
+    bub+=`<circle class="fxp" cx="${x}" cy="${y}" r="${1.1+(i%2)*0.5}" fill="#9fdc8a" opacity="0" style="animation:fxBub ${b}s ease-out ${d}s infinite"/>`;
+  });
+  return `<g>`
+   +`<path d="M121 90 L143 90 L139 68 L125 68 Z" fill="#16241a" stroke="#2f5a33" stroke-width="0.8"/>`
+   +`<path d="M123.5 89 L140.5 89 L138.4 76 L125.6 76 Z" fill="#2b6b34" opacity="0.5"/>`
+   +bub
+   +`<rect x="128" y="44" width="8" height="25" rx="2" fill="#16241a" stroke="#2f5a33" stroke-width="0.8"/>`
+   +`<rect class="fxp" x="129.2" y="46" width="5.6" height="22" rx="2" fill="#d8ecc8" opacity="0.2" style="animation:fxFlick ${s}s ease-in-out infinite"/>`
+   +`<rect x="126" y="41" width="12" height="4" rx="2" fill="#2f5a33"/>`
+   +`<line x1="138" y1="77" x2="149" y2="69" stroke="#2f5a33" stroke-width="2.2" stroke-linecap="round"/>`
+   +`<ellipse cx="150.5" cy="67.5" rx="4.4" ry="2.6" fill="#1d2c1e" stroke="#2f5a33" stroke-width="0.7"/>`
+   +fxEmber(150.5,66.6,2.1,'#ff7a1a',(lvl>=3?1.05:1.5))
+   +fxWisp(132,39,3.4,s,0,'fxSmoke','#cfd6c6')
+   +fxWisp(132,39,2.8,s,(s*0.33).toFixed(2),'fxSmoke2','#c3cbba')
+   +fxWisp(132,39,3.1,s,(s*0.66).toFixed(2),'fxSmoke','#c9d1c0')
+   +(lvl>=3?fxWisp(151,63,2.4,s,(s*0.5).toFixed(2),'fxSmoke2','#b9c2b2'):'')
+   +`</g>`;
+}
+
+// smoking — lit cigarette burning down in the ashtray
+function fxSmoking(lvl){
+  const s=fxSpd(lvl,2.0,3.2);
+  return `<g>`
+   +`<ellipse cx="132" cy="88" rx="15" ry="4.6" fill="#1d1a18" stroke="#2b2723" stroke-width="0.7"/>`
+   +`<ellipse cx="132" cy="87.2" rx="10" ry="2.7" fill="#131110"/>`
+   +`<g transform="rotate(-16 132 84)"><rect x="120" y="82.4" width="24" height="3.3" rx="1.5" fill="#ded8c8"/><rect x="120" y="82.4" width="8" height="3.3" rx="1.5" fill="#b58f4a"/><rect x="138" y="82.4" width="6" height="3.3" rx="1.5" fill="#57514a"/></g>`
+   +fxEmber(143.6,80.6,1.9,'#ff6a12',(lvl>=3?1.1:1.6))
+   +fxWisp(144,78,2.9,s,0,'fxSmoke','#cbcdc6')
+   +fxWisp(144,78,2.4,s,(s*0.5).toFixed(2),'fxSmoke2','#c0c2bb')
+   +(lvl>=2?fxWisp(144,78,3.2,s,(s*0.25).toFixed(2),'fxSmoke','#c6c8c1'):'')
+   +`</g>`;
+}
+
+// vaping — pen on the desk, LED blinking, plume rolling out
+function fxVaping(lvl){
+  const s=fxSpd(lvl,1.8,2.8);
+  return `<g>`
+   +`<rect x="126" y="60" width="9" height="30" rx="4" fill="#1e2030" stroke="#3a3e58" stroke-width="0.7"/>`
+   +`<rect x="128" y="57" width="5" height="4" rx="1.5" fill="#3a3e58"/>`
+   +`<circle class="fxp" cx="130.5" cy="85" r="1.7" fill="#4ad8ff" style="animation:fxBlink ${(s/2).toFixed(2)}s ease-in-out infinite"/>`
+   +fxWisp(131,54,4.4,s,0,'fxVapor','#b9c7dd')
+   +fxWisp(131,54,3.8,s,(s*0.3).toFixed(2),'fxVapor','#aebbd2')
+   +fxWisp(131,54,4.9,s,(s*0.6).toFixed(2),'fxVapor','#c2cfe4')
+   +(lvl>=3?fxWisp(131,54,5.4,s,(s*0.15).toFixed(2),'fxVapor','#aab7ce'):'')
+   +`</g>`;
+}
+
+// alcohol — pint working on carbonation, foam swaying
+function fxAlcohol(lvl){
+  const b=fxSpd(lvl,1.3,2.1);
+  let bub='';
+  [[128,86,0],[133,88,.3],[137,85,.6],[130,87,.9],[135,88,1.2],[132,84,1.5]].forEach(([x,y,d],i)=>{
+    bub+=`<circle class="fxp" cx="${x}" cy="${y}" r="${0.9+(i%3)*0.4}" fill="#f0e2b0" opacity="0" style="animation:fxBubT ${b}s ease-out ${d}s infinite"/>`;
+  });
+  return `<g>`
+   +`<path d="M124 90 L142 90 L140 62 L126 62 Z" fill="#3d2d0c" opacity="0.9" stroke="#4e4326" stroke-width="0.8"/>`
+   +bub
+   +`<rect class="fxp" x="125.6" y="59" width="14.8" height="5.4" rx="2.6" fill="#e6ddc2" opacity="0.55" style="animation:fxSway ${(b*2.4).toFixed(2)}s ease-in-out infinite"/>`
+   +(lvl>=3?`<g class="fxp" style="animation:fxSway ${(b*3).toFixed(2)}s ease-in-out infinite"><rect x="108" y="64" width="10" height="26" rx="3" fill="#2a3020" stroke="#3a4030" stroke-width="0.6"/><rect x="110" y="61" width="6" height="4" rx="2" fill="#3a4030"/></g>`:'')
+   +`</g>`;
+}
+
+// energy — cracked can jittering, fizz venting, bolt flickering
+function fxEnergy(lvl){
+  const j=fxSpd(lvl,0.12,0.24), f=fxSpd(lvl,0.9,1.5);
+  let fz='';
+  [[127,57,0],[132,56,.28],[137,57,.56],[130,55,.84],[135,56,1.12]].forEach(([x,y,d],i)=>{
+    fz+=`<circle class="fxp" cx="${x}" cy="${y}" r="${0.8+(i%2)*0.5}" fill="#c9f220" opacity="0" style="animation:fxFizz ${f}s ease-out ${d}s infinite"/>`;
+  });
+  return `<g>`
+   +`<g class="fxp" style="animation:fxJit ${j}s linear infinite">`
+   +`<rect x="124" y="60" width="16" height="30" rx="4" fill="#16240f" stroke="#3f6b20" stroke-width="0.8"/>`
+   +`<rect x="126" y="56" width="12" height="5" rx="2" fill="#3f6b20"/>`
+   +`<path class="fxp" d="M134 66 l-6 10 h4.2 l-3.2 8 8.6-11.4 h-4.4 z" fill="#c9f220" opacity="0.75" style="animation:fxBlink ${(f*0.8).toFixed(2)}s ease-in-out infinite"/>`
+   +`</g>`+fz
+   +`</g>`;
+}
+
+// gambling — slot machine, reels never stop, lights never learn
+function fxGambling(lvl){
+  const r=fxSpd(lvl,0.26,0.5), l=fxSpd(lvl,0.5,0.9);
+  const sym=(x,y,c,shape)=>shape==='c'
+    ? `<circle cx="${x}" cy="${y}" r="3.1" fill="${c}"/>`
+    : `<rect x="${x-3}" y="${y-3}" width="6" height="6" rx="1.4" fill="${c}"/>`;
+  const strip=(x,dur,dly)=>{
+    let g='';
+    const pal=[['#d9a520','c'],['#cf3f3f','r'],['#43b0c8','c']];
+    for(let i=0;i<6;i++){ const [c,sh]=pal[i%3]; g+=sym(x,63+i*12,c,sh); }
+    return `<g clip-path="url(#fxslot)"><g class="fxp" style="animation:fxReel ${dur}s linear ${dly}s infinite">${g}</g></g>`;
+  };
+  return `<g>`
+   +`<defs><clipPath id="fxslot"><rect x="112" y="59" width="36" height="19" rx="2"/></clipPath></defs>`
+   +`<rect x="107" y="50" width="46" height="40" rx="5" fill="#1a1710" stroke="#3a3322" stroke-width="0.8"/>`
+   +`<rect x="112" y="59" width="36" height="19" rx="2" fill="#0a0906"/>`
+   +strip(121,r,0)+strip(130,(r*1.25).toFixed(2),0.1)+strip(139,(r*1.55).toFixed(2),0.2)
+   +`<circle class="fxp" cx="116" cy="55" r="2.1" fill="#d9a520" style="animation:fxBlink ${l}s ease-in-out infinite"/>`
+   +`<circle class="fxp" cx="130" cy="55" r="2.1" fill="#cf3f3f" style="animation:fxBlink ${l}s ease-in-out ${(l/3).toFixed(2)}s infinite"/>`
+   +`<circle class="fxp" cx="144" cy="55" r="2.1" fill="#43b0c8" style="animation:fxBlink ${l}s ease-in-out ${(l/1.5).toFixed(2)}s infinite"/>`
+   +`<rect x="112" y="82" width="36" height="5" rx="2" fill="#241f14"/>`
+   +(lvl>=2?`<rect class="fxp" x="114" y="83.2" width="10" height="2.6" rx="1.3" fill="#d9a520" opacity="0.7" style="animation:fxBlink ${(l*1.4).toFixed(2)}s ease-in-out infinite"/>`:'')
+   +`</g>`;
+}
+
+// shopping — packages keep arriving, cart badge keeps counting
+function fxShopping(lvl){
+  const s=fxSpd(lvl,3.0,5.0);
+  const box=(x,y,w,h,dly)=>`<g class="fxp" style="animation:fxSlide ${s}s ease-out ${dly}s infinite"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="#242736" stroke="#343849" stroke-width="0.6"/><rect x="${x}" y="${y+h/2-1.4}" width="${w}" height="2.8" fill="#343849" opacity="0.9"/><rect x="${x+w/2-1.4}" y="${y}" width="2.8" height="${h}" fill="#343849" opacity="0.9"/></g>`;
+  return `<g>`
+   +box(96,114,24,22,0)
+   +box(124,118,19,18,(s*0.45).toFixed(2))
+   +(lvl>=3?box(147,116,17,20,(s*0.7).toFixed(2)):'')
+   +`<circle class="fxp" cx="92" cy="66" r="4" fill="#E05252" style="animation:fxBlink 1.3s ease-in-out infinite"/>`
+   +`<text x="92" y="68.3" text-anchor="middle" font-family="monospace" font-size="5" fill="#0D0D0F">${Math.min(9,lvl+1)}</text>`
+   +`</g>`;
+}
+
+// doomscrolling — the feed never ends, the screen never stops flickering
+function fxDoom(lvl){
+  const f=fxSpd(lvl,0.55,1.3);
+  let rows='';
+  for(let i=0;i<7;i++){
+    const y=40+i*12;
+    rows+=`<rect x="269" y="${y}" width="20" height="7.4" rx="1.5" fill="${i%3===0?'#2b3348':'#222635'}"/>`
+         +`<rect x="269" y="${y+8}" width="${10+(i%3)*4}" height="2.2" rx="1.1" fill="#1b1e2a"/>`;
+  }
+  return `<g>`
+   +`<defs><clipPath id="fxfeed"><rect x="268" y="39" width="22" height="38" rx="2"/></clipPath></defs>`
+   +`<rect x="265" y="35" width="28" height="46" rx="4" fill="#15161c" stroke="#2a2c36" stroke-width="0.7"/>`
+   +`<rect x="268" y="39" width="22" height="38" rx="2" fill="#0a0d18"/>`
+   +`<g clip-path="url(#fxfeed)"><g class="fxp" style="animation:fxFeed ${f}s linear infinite">${rows}</g></g>`
+   +`<rect class="fxp" x="268" y="39" width="22" height="38" rx="2" fill="#3f6fd8" opacity="0.2" style="animation:fxFlick ${(f*2.2).toFixed(2)}s ease-in-out infinite"/>`
+   +`<rect class="fxp" x="20" y="18" width="80" height="56" rx="3" fill="#2f5ad0" opacity="0.18" style="animation:fxFlick ${(f*3).toFixed(2)}s ease-in-out infinite"/>`
+   +`</g>`;
+}
+
+// adult — screen flicker, scanline crawl, glow on the wall
+function fxAdult(lvl){
+  const f=fxSpd(lvl,1.6,2.6);
+  return `<g>`
+   +`<defs><clipPath id="fxscr"><rect x="31" y="59" width="28" height="46" rx="2"/></clipPath></defs>`
+   +`<g clip-path="url(#fxscr)">`
+   +`<rect class="fxp" x="31" y="59" width="28" height="46" fill="#c4567f" opacity="0.18" style="animation:fxFlick ${f}s ease-in-out infinite"/>`
+   +`<rect class="fxp" x="31" y="59" width="28" height="4" fill="#ffffff" opacity="0.09" style="animation:fxScan ${(f*1.4).toFixed(2)}s linear infinite"/>`
+   +`</g>`
+   +`<ellipse class="fxp" cx="45" cy="82" rx="34" ry="26" fill="#c4567f" opacity="0.07" style="animation:fxFlick ${(f*1.8).toFixed(2)}s ease-in-out infinite"/>`
+   +(lvl>=2?`<rect class="fxp" x="31" y="59" width="28" height="46" fill="#0a0808" opacity="0.3" style="animation:fxFlick ${(f*2.4).toFixed(2)}s ease-in-out infinite"/>`:'')
+   +`</g>`;
+}
+
+function drawSmokingApt(lvl){setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="188" y="72" width="30" height="5" rx="1" fill="#2a2020" transform="rotate(-12 203 74)"/><rect x="202" y="80" width="20" height="3" rx="1" fill="#252020" transform="rotate(6 212 81)"/>':'')+(lvl>=3?'<rect x="268" y="72" width="20" height="8" rx="2" fill="#221e1a"/><ellipse cx="278" cy="72" rx="5" ry="2" fill="#66605a" opacity="0.5"/>':'')+(lvl>=4?'<rect x="134" y="76" width="14" height="3" rx="1" fill="#252020" transform="rotate(18 141 77)"/><rect x="150" y="72" width="10" height="2" rx="1" fill="#252020" transform="rotate(-8 155 73)"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0e0c0a" opacity="0.5"/>':''+fxSmoking(lvl)));}
+function drawVapingApt(lvl){setSVG('apt-svg',base+`<rect x="20" y="12" width="70" height="50" rx="3" fill="#0a1020" stroke="#252528" stroke-width="1"/>`+desk+`<rect x="34" y="72" width="14" height="26" rx="4" fill="#1e2030" stroke="#303248" stroke-width="0.5"/>`+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<ellipse cx="95" cy="28" rx="22" ry="10" fill="#1a1e2a" opacity="0.25"/>':'')+(lvl>=3?'<rect x="268" y="70" width="28" height="10" rx="3" fill="#1e2030" stroke="#303248" stroke-width="0.5"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0c14" opacity="0.5"/>':''+fxVaping(lvl)));}
+function drawWeedApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="30" y="60" width="22" height="7" rx="2" fill="#221e18"/>`.replace('/>','>')+`</rect>`+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="190" y="74" width="34" height="4" rx="1" fill="#1e221c" transform="rotate(-8 207 76)"/>':'')+(lvl>=3?'<rect x="268" y="72" width="22" height="8" rx="2" fill="#221e18"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0e0a" opacity="0.5"/>':''+fxWeed(lvl)));}
+function drawDoomApt(lvl){setSVG('apt-svg',base+`<rect x="20" y="18" width="80" height="56" rx="3" fill="#0a0e1a" stroke="#252528" stroke-width="1"/><rect x="22" y="20" width="76" height="52" rx="2" fill="#0e1224" opacity="0.9"/>`+(lvl>=2?'<rect x="22" y="20" width="76" height="52" rx="2" fill="#141830" opacity="0.5"/>':'')+(lvl>=1?'<rect x="155" y="28" width="36" height="58" rx="4" fill="#1e1e22" stroke="#2a2a30" stroke-width="0.5"/><rect x="159" y="32" width="28" height="50" rx="2" fill="#0a0a14"/>':'')+`<rect x="148" y="66" width="122" height="50" rx="6" fill="#1c1818"/><rect x="142" y="113" width="134" height="7" rx="3" fill="#181414"/><rect x="148" y="120" width="10" height="16" rx="2" fill="#181414"/><rect x="256" y="120" width="10" height="16" rx="2" fill="#181414"/>`+table+(lvl>=2?plantW:plantH)+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#080a10" opacity="0.6"/>':''+fxDoom(lvl)));}
+function drawAlcoholApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="28" y="58" width="10" height="32" rx="3" fill="#2a3020" stroke="#3a4030" stroke-width="0.5"/><rect x="30" y="56" width="6" height="4" rx="2" fill="#3a4030"/><rect x="44" y="66" width="9" height="26" rx="3" fill="#2a2c20" stroke="#3a3c30" stroke-width="0.5"/>`+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="60" y="68" width="8" height="24" rx="3" fill="#2a2820" stroke="#3a3830" stroke-width="0.5"/>':'')+(lvl>=3?'<rect x="268" y="72" width="38" height="10" rx="2" fill="#201a14"/><rect x="270" y="74" width="8" height="26" rx="3" fill="#2a2c20" stroke="#3a3c30" stroke-width="0.5"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#100a08" opacity="0.5"/>':''+fxAlcohol(lvl)));}
+function drawEnergyApt(lvl){const can='<rect x="266" y="58" width="14" height="30" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="268" y="54" width="10" height="6" rx="2" fill="#283820"/>';setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+can+(lvl>=1?'<rect x="284" y="60" width="13" height="28" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="286" y="56" width="9" height="6" rx="2" fill="#283820"/>':'')+(lvl>=3?'<rect x="86" y="94" width="13" height="26" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="88" y="90" width="9" height="6" rx="2" fill="#283820"/>':'')+(lvl>=4?'<rect x="302" y="62" width="12" height="26" rx="4" fill="#1a2818" stroke="#283820" stroke-width="0.5"/><rect x="304" y="58" width="8" height="6" rx="2" fill="#283820"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#080e06" opacity="0.6"/>':''+fxEnergy(lvl)));}
+function drawGamblingApt(lvl){setSVG('apt-svg',base+win+desk+`<rect x="34" y="60" width="62" height="32" rx="3" fill="#0A0A0C" stroke="#2a2a30" stroke-width="0.5"/><rect x="58" y="92" width="12" height="5" rx="1" fill="#181818"/>`.replace('/>','>')+`</rect>`+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?'<rect x="268" y="66" width="22" height="16" rx="2" fill="#1e1c14" stroke="#2e2c24" stroke-width="0.5"/><rect x="272" y="70" width="4" height="4" rx="1" fill="#aa8820" opacity="0.7"/><rect x="280" y="70" width="4" height="4" rx="1" fill="#aa2020" opacity="0.7"/>':'')+(lvl>=3?'<rect x="294" y="68" width="20" height="14" rx="2" fill="#1e1c14" stroke="#2e2c24" stroke-width="0.5"/><rect x="298" y="71" width="4" height="4" rx="1" fill="#2088aa" opacity="0.7"/><rect x="306" y="71" width="4" height="4" rx="1" fill="#20aa20" opacity="0.7"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#100a06" opacity="0.6"/>':''+fxGambling(lvl)));}
+function drawShoppingApt(lvl){const box='<rect x="260" y="60" width="24" height="28" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/>';setSVG('apt-svg',base+win+desk+monitor+chair+table+(lvl>=2?plantW:plantH)+(lvl>=1?box:'')+(lvl>=2?'<rect x="28" y="80" width="26" height="28" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="32" y="76" width="18" height="6" rx="1" fill="#2a2c38"/>':'')+(lvl>=3?'<rect x="60" y="78" width="24" height="26" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="64" y="74" width="16" height="6" rx="1" fill="#2a2c38"/><rect x="287" y="62" width="22" height="26" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/>':'')+(lvl>=4?'<rect x="91" y="76" width="22" height="24" rx="3" fill="#1c1e2a" stroke="#2a2c38" stroke-width="0.5"/><rect x="95" y="72" width="14" height="6" rx="1" fill="#2a2c38"/>':'')+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#06080e" opacity="0.6"/>':''+fxShopping(lvl)));}
+function drawAdultApt(lvl){setSVG('apt-svg',base+`<rect x="22" y="12" width="64" height="50" rx="2" fill="#14100e" stroke="#252528" stroke-width="1"/>`+(lvl>=3?'<rect x="22" y="12" width="64" height="50" rx="2" fill="#0a0808" opacity="0.7"/>':'')+`<rect x="14" y="88" width="200" height="8" rx="3" fill="#1c1818"/><rect x="14" y="96" width="200" height="20" rx="3" fill="#181414"/><rect x="14" y="116" width="200" height="10" rx="2" fill="#141010"/>`.replace('/>','>')+`</rect>`+table+(lvl>=2?plantW:plantH)+`<rect x="28" y="56" width="34" height="52" rx="4" fill="#1e1e22" stroke="#2a2a30" stroke-width="0.5"/><rect x="31" y="59" width="28" height="46" rx="2" fill="${lvl>=1?'#0a0a14':'#121220'}"/>`.replace('/>','>')+`</rect>`+(lvl>=5?'<rect x="0" y="105" width="390" height="5" fill="#0a0808" opacity="0.7"/>':''+fxAdult(lvl)));}
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let S={activeBehaviors:['smoking'],currentBehavior:'smoking',settings:{},events:{},notif:{enabled:false,time:'20:00',lastSent:null}};
